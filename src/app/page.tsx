@@ -1,16 +1,21 @@
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getYoutubeEmbedUrl } from "@/lib/video";
+import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [ads, catalogs] = await Promise.all([
+  const [ads, catalogs, socials] = await Promise.all([
     prisma.ad.findMany({
       where: { published: true },
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
     }),
     prisma.catalog.findMany({
+      where: { published: true },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    }),
+    prisma.socialLink.findMany({
       where: { published: true },
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
     }),
@@ -20,10 +25,31 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border-soft">
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col items-center text-center">
-          <Image src="/logo.webp" alt="Wanna Cosmetics" width={340} height={120} priority className="h-auto w-[260px] sm:w-[320px]" />
+          <Image src="/logo.webp" alt="Wanna Cosmetics" width={420} height={148} priority className="h-auto w-[320px] sm:w-[420px]" />
           <p className="mt-4 text-muted text-sm tracking-wide font-light">
             Novedades, promociones y catálogos
           </p>
+          {socials.length > 0 && (
+            <div className="mt-6 flex items-center gap-3">
+              {socials.map((social) => (
+                <a
+                  key={social.id}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={social.platform === "other" ? social.label ?? "Enlace" : platformLabel(social.platform)}
+                  className="h-10 w-10 rounded-full bg-brand-tint text-brand flex items-center justify-center hover:bg-brand hover:text-white transition"
+                >
+                  {social.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={social.imageUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <SocialIcon platform={social.platform} className="h-5 w-5" />
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 
