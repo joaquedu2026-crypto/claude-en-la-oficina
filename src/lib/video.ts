@@ -18,3 +18,7 @@ export function getYoutubeEmbedUrl(url: string): string | null {
     return null;
   }
 }
+
+export function isVideoFile(url: string): boolean {
+  return /\.(mp4|webm|mov)$/i.test(url);
+}

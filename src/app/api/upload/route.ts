@@ -1,39 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { isAuthenticated } from "@/lib/auth";
 
-const ALLOWED_TYPES: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/webp": "webp",
-  "image/gif": "gif",
-};
-const MAX_SIZE_BYTES = 8 * 1024 * 1024; // 8MB
+const ALLOWED_CONTENT_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+];
 
-export async function POST(request: NextRequest) {
+const MAX_SIZE_BYTES = 100 * 1024 * 1024; // 100MB (covers short videos)
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const formData = await request.formData();
-  const file = formData.get("file");
+  const body = (await request.json()) as HandleUploadBody;
 
-  if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Archivo no recibido" }, { status: 400 });
+  try {
+    const jsonResponse = await handleUpload({
+      body,
+      request,
+      onBeforeGenerateToken: async () => ({
+        allowedContentTypes: ALLOWED_CONTENT_TYPES,
+        maximumSizeInBytes: MAX_SIZE_BYTES,
+        addRandomSuffix: true,
+      }),
+      onUploadCompleted: async () => {},
+    });
+
+    return NextResponse.json(jsonResponse);
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Error al subir el archivo" },
+      { status: 400 },
+    );
   }
-
-  const extension = ALLOWED_TYPES[file.type];
-  if (!extension) {
-    return NextResponse.json({ error: "Tipo de archivo no permitido" }, { status: 400 });
-  }
-
-  if (file.size > MAX_SIZE_BYTES) {
-    return NextResponse.json({ error: "El archivo supera 8MB" }, { status: 400 });
-  }
-
-  const blob = await put(`uploads/${crypto.randomUUID()}.${extension}`, file, {
-    access: "public",
-  });
-
-  return NextResponse.json({ url: blob.url });
 }

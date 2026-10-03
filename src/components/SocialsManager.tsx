@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import SocialIcon, { SOCIAL_PLATFORMS, platformLabel } from "./SocialIcon";
+import { uploadFile } from "@/lib/upload-client";
 
 type Social = {
   id: string;
@@ -43,18 +44,14 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
     if (!file) return;
     setUploading(true);
     setError("");
-
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body });
-    const data = await res.json();
-    setUploading(false);
-
-    if (!res.ok) {
-      setError(data.error ?? "Error al subir la imagen");
-      return;
+    try {
+      const url = await uploadFile(file);
+      setForm((f) => ({ ...f, imageUrl: url }));
+    } catch {
+      setError("Error al subir la imagen");
+    } finally {
+      setUploading(false);
     }
-    setForm((f) => ({ ...f, imageUrl: data.url }));
   }
 
   async function handleSubmit(e: React.FormEvent) {

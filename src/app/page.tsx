@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import { getYoutubeEmbedUrl } from "@/lib/video";
+import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 
 export const dynamic = "force-dynamic";
@@ -126,14 +126,32 @@ export default async function Home() {
           ) : (
             <div className="grid sm:grid-cols-2 gap-7">
               {ads.map((ad) => {
-                const embedUrl = ad.videoUrl ? getYoutubeEmbedUrl(ad.videoUrl) : null;
+                const embedUrl = ad.videoUrl && !isVideoFile(ad.videoUrl) ? getYoutubeEmbedUrl(ad.videoUrl) : null;
+                const uploadedVideo = ad.videoUrl && isVideoFile(ad.videoUrl) ? ad.videoUrl : null;
+                const hasCustomSize = Boolean(ad.mediaWidth || ad.mediaHeight);
+                const mediaStyle = hasCustomSize
+                  ? {
+                      width: ad.mediaWidth ? `${ad.mediaWidth}px` : undefined,
+                      height: ad.mediaHeight ? `${ad.mediaHeight}px` : undefined,
+                      maxWidth: "100%",
+                    }
+                  : undefined;
+
                 return (
                   <article
                     key={ad.id}
-                    className="bg-white border border-border-soft rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition"
+                    className={`bg-white border border-border-soft rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition ${ad.fullWidth ? "sm:col-span-2" : ""}`}
                   >
-                    {embedUrl ? (
-                      <div className="aspect-video">
+                    {uploadedVideo ? (
+                      <div className={hasCustomSize ? "mx-auto" : "aspect-video"} style={mediaStyle}>
+                        <video
+                          src={uploadedVideo}
+                          controls
+                          className={hasCustomSize ? "w-full h-full" : "w-full h-full object-cover"}
+                        />
+                      </div>
+                    ) : embedUrl ? (
+                      <div className={hasCustomSize ? "mx-auto" : "aspect-video"} style={mediaStyle}>
                         <iframe
                           src={embedUrl}
                           title={ad.title}
@@ -143,7 +161,12 @@ export default async function Home() {
                       </div>
                     ) : ad.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={ad.imageUrl} alt={ad.title} className="w-full aspect-video object-cover" />
+                      <img
+                        src={ad.imageUrl}
+                        alt={ad.title}
+                        className={hasCustomSize ? "mx-auto" : "w-full aspect-video object-cover"}
+                        style={mediaStyle}
+                      />
                     ) : null}
 
                     <div className="p-6 flex-1 flex flex-col">
@@ -161,7 +184,7 @@ export default async function Home() {
                           Ver más →
                         </a>
                       )}
-                      {ad.videoUrl && !embedUrl && (
+                      {ad.videoUrl && !embedUrl && !uploadedVideo && (
                         <a
                           href={ad.videoUrl}
                           target="_blank"

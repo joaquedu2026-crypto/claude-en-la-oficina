@@ -14,6 +14,9 @@ model Ad {
   imageUrl    String?
   videoUrl    String?
   link        String?
+  mediaWidth  Int?
+  mediaHeight Int?
+  fullWidth   Boolean  @default(false)
   published   Boolean  @default(true)
   order       Int      @default(0)
   createdAt   DateTime @default(now())

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { uploadFile } from "@/lib/upload-client";
+import { isVideoFile } from "@/lib/video";
 
 type Ad = {
   id: string;
@@ -9,17 +11,31 @@ type Ad = {
   imageUrl: string | null;
   videoUrl: string | null;
   link: string | null;
+  mediaWidth: number | null;
+  mediaHeight: number | null;
+  fullWidth: boolean;
   published: boolean;
   order: number;
 };
 
-const emptyForm = { title: "", description: "", imageUrl: "", videoUrl: "", link: "" };
+const emptyForm = {
+  title: "",
+  description: "",
+  imageUrl: "",
+  videoUrl: "",
+  link: "",
+  mediaWidth: "",
+  mediaHeight: "",
+  fullWidth: false,
+  order: "0",
+};
 
 export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
   const [ads, setAds] = useState<Ad[]>(initialAds);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -31,6 +47,10 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
       imageUrl: ad.imageUrl ?? "",
       videoUrl: ad.videoUrl ?? "",
       link: ad.link ?? "",
+      mediaWidth: ad.mediaWidth != null ? String(ad.mediaWidth) : "",
+      mediaHeight: ad.mediaHeight != null ? String(ad.mediaHeight) : "",
+      fullWidth: ad.fullWidth,
+      order: String(ad.order),
     });
   }
 
@@ -39,23 +59,34 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
     setForm(emptyForm);
   }
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
+    setUploadingImage(true);
     setError("");
-
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body });
-    const data = await res.json();
-    setUploading(false);
-
-    if (!res.ok) {
-      setError(data.error ?? "Error al subir la imagen");
-      return;
+    try {
+      const url = await uploadFile(file);
+      setForm((f) => ({ ...f, imageUrl: url }));
+    } catch {
+      setError("Error al subir la imagen");
+    } finally {
+      setUploadingImage(false);
     }
-    setForm((f) => ({ ...f, imageUrl: data.url }));
+  }
+
+  async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    setError("");
+    try {
+      const url = await uploadFile(file);
+      setForm((f) => ({ ...f, videoUrl: url }));
+    } catch {
+      setError("Error al subir el video");
+    } finally {
+      setUploadingVideo(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -67,12 +98,24 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
     setSaving(true);
     setError("");
 
+    const payload = {
+      title: form.title,
+      description: form.description,
+      imageUrl: form.imageUrl,
+      videoUrl: form.videoUrl,
+      link: form.link,
+      mediaWidth: form.mediaWidth.trim() ? Number(form.mediaWidth) : null,
+      mediaHeight: form.mediaHeight.trim() ? Number(form.mediaHeight) : null,
+      fullWidth: form.fullWidth,
+      order: form.order.trim() ? Number(form.order) : 0,
+    };
+
     const url = editingId ? `/api/ads/${editingId}` : "/api/ads";
     const method = editingId ? "PUT" : "POST";
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     setSaving(false);
@@ -83,9 +126,9 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
     }
 
     if (editingId) {
-      setAds((prev) => prev.map((a) => (a.id === editingId ? data : a)));
+      setAds((prev) => prev.map((a) => (a.id === editingId ? data : a)).sort((a, b) => a.order - b.order));
     } else {
-      setAds((prev) => [data, ...prev]);
+      setAds((prev) => [...prev, data].sort((a, b) => a.order - b.order));
     }
     cancelEdit();
   }
@@ -107,6 +150,19 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
     const data = await res.json();
     if (res.ok) {
       setAds((prev) => prev.map((a) => (a.id === ad.id ? data : a)));
+    }
+  }
+
+  async function updateOrder(ad: Ad, newOrder: number) {
+    if (Number.isNaN(newOrder)) return;
+    const res = await fetch(`/api/ads/${ad.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order: newOrder }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setAds((prev) => prev.map((a) => (a.id === ad.id ? data : a)).sort((a, b) => a.order - b.order));
     }
   }
 
@@ -140,21 +196,30 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
         </div>
 
         <div>
-          <label className="block text-sm text-foreground mb-1">Imagen</label>
-          <input type="file" accept="image/*" onChange={handleUpload} className="text-sm" />
-          {uploading && <p className="text-xs text-muted mt-1">Subiendo…</p>}
-          {form.imageUrl && (
+          <label className="block text-sm text-foreground mb-1">Imagen (foto o GIF animado)</label>
+          <input type="file" accept="image/*" onChange={handleImageUpload} className="text-sm" />
+          {uploadingImage && <p className="text-xs text-muted mt-1">Subiendo…</p>}
+          {form.imageUrl && !isVideoFile(form.imageUrl) && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={form.imageUrl} alt="" className="mt-2 h-24 rounded-lg object-cover" />
           )}
         </div>
 
         <div>
+          <label className="block text-sm text-foreground mb-1">Video — subir archivo (opcional)</label>
+          <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoUpload} className="text-sm" />
+          {uploadingVideo && <p className="text-xs text-muted mt-1">Subiendo… (puede tardar según el tamaño)</p>}
+          {form.videoUrl && isVideoFile(form.videoUrl) && (
+            <video src={form.videoUrl} controls className="mt-2 h-24 rounded-lg" />
+          )}
+        </div>
+
+        <div>
           <label className="block text-sm text-foreground mb-1">
-            Video (URL de YouTube u otro, opcional)
+            …o pegar un link de YouTube / video externo (opcional)
           </label>
           <input
-            value={form.videoUrl}
+            value={isVideoFile(form.videoUrl) ? "" : form.videoUrl}
             onChange={(e) => setForm((f) => ({ ...f, videoUrl: e.target.value }))}
             placeholder="https://youtube.com/..."
             className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
@@ -168,6 +233,54 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
             onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
             placeholder="https://..."
             className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-foreground mb-1">Ancho (px, opcional)</label>
+            <input
+              type="number"
+              min={0}
+              value={form.mediaWidth}
+              onChange={(e) => setForm((f) => ({ ...f, mediaWidth: e.target.value }))}
+              placeholder="Automático"
+              className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-foreground mb-1">Alto (px, opcional)</label>
+            <input
+              type="number"
+              min={0}
+              value={form.mediaHeight}
+              onChange={(e) => setForm((f) => ({ ...f, mediaHeight: e.target.value }))}
+              placeholder="Automático"
+              className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+            />
+          </div>
+        </div>
+        <p className="text-xs text-muted -mt-2">
+          Si dejás estos campos vacíos, la imagen/video se adapta automáticamente. En celulares nunca se va a pasar del ancho de la pantalla.
+        </p>
+
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            checked={form.fullWidth}
+            onChange={(e) => setForm((f) => ({ ...f, fullWidth: e.target.checked }))}
+            className="rounded border-border-soft"
+          />
+          Ocupar todo el ancho de la página (anuncio destacado)
+        </label>
+
+        <div>
+          <label className="block text-sm text-foreground mb-1">Orden (los números más bajos aparecen primero)</label>
+          <input
+            type="number"
+            value={form.order}
+            onChange={(e) => setForm((f) => ({ ...f, order: e.target.value }))}
+            className="w-32 rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
           />
         </div>
 
@@ -206,15 +319,29 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
               <img src={ad.imageUrl} alt="" className="h-16 w-16 rounded-lg object-cover flex-shrink-0" />
             )}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-medium truncate">{ad.title}</h3>
                 {!ad.published && (
                   <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
                     Oculto
                   </span>
                 )}
+                {ad.fullWidth && (
+                  <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
+                    Ancho completo
+                  </span>
+                )}
               </div>
               <p className="text-sm text-muted line-clamp-2">{ad.description}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <label className="text-xs text-muted">Orden:</label>
+                <input
+                  type="number"
+                  defaultValue={ad.order}
+                  onBlur={(e) => updateOrder(ad, Number(e.target.value))}
+                  className="w-16 rounded-lg bg-white border border-border-soft px-2 py-1 text-xs outline-none focus:border-brand"
+                />
+              </div>
             </div>
             <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
               <button
