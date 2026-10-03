@@ -145,7 +145,7 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
         </div>
 
         <div>
-          <label className="block text-sm text-foreground mb-1">Imagen / ícono (opcional)</label>
+          <label className="block text-sm text-foreground mb-1">Imagen o GIF animado (opcional)</label>
           <input type="file" accept="image/*" onChange={handleUpload} className="text-sm" />
           {uploading && <p className="text-xs text-muted mt-1">Subiendo…</p>}
           {form.imageUrl && (

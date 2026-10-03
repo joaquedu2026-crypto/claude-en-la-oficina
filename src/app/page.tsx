@@ -87,22 +87,22 @@ export default async function Home() {
                   href={catalog.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group bg-white border border-border-soft hover:border-brand-light rounded-2xl p-5 flex flex-col items-center text-center gap-3 transition shadow-sm hover:shadow-md"
+                  className="group bg-white border border-border-soft hover:border-brand-light rounded-2xl overflow-hidden flex flex-col transition shadow-sm hover:shadow-md"
                 >
                   {catalog.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={catalog.imageUrl}
                       alt={catalog.name}
-                      className="h-14 w-14 rounded-full object-cover"
+                      className="w-full aspect-square object-cover"
                     />
                   ) : (
-                    <div className="h-14 w-14 rounded-full bg-brand-tint flex items-center justify-center text-brand text-lg font-medium">
+                    <div className="w-full aspect-square bg-brand-tint flex items-center justify-center text-brand text-3xl font-medium">
                       {catalog.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <div>
-                    <p className="font-medium text-sm group-hover:text-brand transition">
+                  <div className="bg-white p-3 text-center">
+                    <p className="font-semibold text-base text-foreground group-hover:text-brand transition">
                       {catalog.name}
                     </p>
                     {catalog.description && (
