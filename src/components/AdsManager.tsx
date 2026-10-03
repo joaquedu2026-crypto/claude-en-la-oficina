@@ -114,35 +114,35 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
     <div className="space-y-8">
       <form
         onSubmit={handleSubmit}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4"
+        className="bg-white border border-border-soft rounded-2xl p-6 space-y-4"
       >
         <h2 className="text-lg font-semibold">
           {editingId ? "Editar anuncio" : "Nuevo anuncio"}
         </h2>
 
         <div>
-          <label className="block text-sm text-slate-300 mb-1">Título</label>
+          <label className="block text-sm text-foreground mb-1">Título</label>
           <input
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 outline-none focus:border-indigo-500"
+            className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
           />
         </div>
 
         <div>
-          <label className="block text-sm text-slate-300 mb-1">Descripción</label>
+          <label className="block text-sm text-foreground mb-1">Descripción</label>
           <textarea
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             rows={3}
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 outline-none focus:border-indigo-500"
+            className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
           />
         </div>
 
         <div>
-          <label className="block text-sm text-slate-300 mb-1">Imagen</label>
+          <label className="block text-sm text-foreground mb-1">Imagen</label>
           <input type="file" accept="image/*" onChange={handleUpload} className="text-sm" />
-          {uploading && <p className="text-xs text-slate-400 mt-1">Subiendo…</p>}
+          {uploading && <p className="text-xs text-muted mt-1">Subiendo…</p>}
           {form.imageUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={form.imageUrl} alt="" className="mt-2 h-24 rounded-lg object-cover" />
@@ -150,34 +150,34 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
         </div>
 
         <div>
-          <label className="block text-sm text-slate-300 mb-1">
+          <label className="block text-sm text-foreground mb-1">
             Video (URL de YouTube u otro, opcional)
           </label>
           <input
             value={form.videoUrl}
             onChange={(e) => setForm((f) => ({ ...f, videoUrl: e.target.value }))}
             placeholder="https://youtube.com/..."
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 outline-none focus:border-indigo-500"
+            className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
           />
         </div>
 
         <div>
-          <label className="block text-sm text-slate-300 mb-1">Enlace (opcional)</label>
+          <label className="block text-sm text-foreground mb-1">Enlace (opcional)</label>
           <input
             value={form.link}
             onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
             placeholder="https://..."
-            className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 outline-none focus:border-indigo-500"
+            className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
           />
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 px-4 py-2 font-medium transition"
+            className="rounded-lg bg-brand hover:bg-brand/90 text-white disabled:opacity-60 px-4 py-2 font-medium transition"
           >
             {saving ? "Guardando…" : editingId ? "Guardar cambios" : "Publicar anuncio"}
           </button>
@@ -185,7 +185,7 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
             <button
               type="button"
               onClick={cancelEdit}
-              className="rounded-lg bg-slate-800 hover:bg-slate-700 px-4 py-2 font-medium transition"
+              className="rounded-lg bg-brand-tint hover:bg-brand-light/40 text-brand px-4 py-2 font-medium transition"
             >
               Cancelar
             </button>
@@ -195,11 +195,11 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Anuncios ({ads.length})</h2>
-        {ads.length === 0 && <p className="text-slate-400 text-sm">Todavía no hay anuncios.</p>}
+        {ads.length === 0 && <p className="text-muted text-sm">Todavía no hay anuncios.</p>}
         {ads.map((ad) => (
           <div
             key={ad.id}
-            className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex gap-4 items-start"
+            className="bg-white border border-border-soft rounded-xl p-4 flex gap-4 items-start"
           >
             {ad.imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -209,29 +209,29 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
               <div className="flex items-center gap-2">
                 <h3 className="font-medium truncate">{ad.title}</h3>
                 {!ad.published && (
-                  <span className="text-xs bg-slate-700 px-2 py-0.5 rounded-full text-slate-300">
+                  <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
                     Oculto
                   </span>
                 )}
               </div>
-              <p className="text-sm text-slate-400 line-clamp-2">{ad.description}</p>
+              <p className="text-sm text-muted line-clamp-2">{ad.description}</p>
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={() => togglePublished(ad)}
-                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
+                className="text-xs px-3 py-1.5 rounded-lg bg-brand-tint hover:bg-brand-light/40 text-brand transition"
               >
                 {ad.published ? "Ocultar" : "Publicar"}
               </button>
               <button
                 onClick={() => startEdit(ad)}
-                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 transition"
+                className="text-xs px-3 py-1.5 rounded-lg bg-brand-tint hover:bg-brand-light/40 text-brand transition"
               >
                 Editar
               </button>
               <button
                 onClick={() => handleDelete(ad.id)}
-                className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 hover:bg-red-900 transition"
+                className="text-xs px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 transition"
               >
                 Eliminar
               </button>

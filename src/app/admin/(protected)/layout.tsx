@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { isAuthenticated } from "@/lib/auth";
 import LogoutButton from "@/components/LogoutButton";
@@ -9,20 +10,23 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <header className="border-b border-slate-800 bg-slate-900/60">
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border-soft bg-white">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <nav className="flex gap-4 text-sm">
-            <Link href="/admin" className="hover:text-indigo-400 font-medium">
-              Anuncios
-            </Link>
-            <Link href="/admin/catalogs" className="hover:text-indigo-400 font-medium">
-              Catálogos
-            </Link>
-            <Link href="/" className="hover:text-indigo-400 text-slate-400">
-              Ver sitio público ↗
-            </Link>
-          </nav>
+          <div className="flex items-center gap-6">
+            <Image src="/logo.webp" alt="Wanna Cosmetics" width={120} height={42} className="h-8 w-auto" />
+            <nav className="flex gap-4 text-sm">
+              <Link href="/admin" className="hover:text-brand font-medium">
+                Anuncios
+              </Link>
+              <Link href="/admin/catalogs" className="hover:text-brand font-medium">
+                Catálogos
+              </Link>
+              <Link href="/" className="hover:text-brand text-muted">
+                Ver sitio público ↗
+              </Link>
+            </nav>
+          </div>
           <LogoutButton />
         </div>
       </header>

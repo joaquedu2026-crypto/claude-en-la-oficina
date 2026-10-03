@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -33,15 +34,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl"
+        className="w-full max-w-sm bg-background border border-border-soft rounded-2xl p-8 shadow-sm"
       >
-        <h1 className="text-xl font-semibold text-white mb-1">Panel de administración</h1>
-        <p className="text-slate-400 text-sm mb-6">Ingresá la contraseña para continuar.</p>
+        <div className="flex justify-center mb-6">
+          <Image src="/logo.webp" alt="Wanna Cosmetics" width={200} height={70} className="h-auto w-[180px]" />
+        </div>
+        <h1 className="text-base font-medium text-foreground mb-1 text-center">Panel de administración</h1>
+        <p className="text-muted text-sm mb-6 text-center font-light">Ingresá la contraseña para continuar.</p>
 
-        <label className="block text-sm text-slate-300 mb-2" htmlFor="password">
+        <label className="block text-sm text-foreground mb-2" htmlFor="password">
           Contraseña
         </label>
         <input
@@ -49,16 +53,16 @@ export default function LoginPage() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg bg-slate-800 border border-slate-700 px-3 py-2 text-white outline-none focus:border-indigo-500"
+          className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 text-foreground outline-none focus:border-brand"
           autoFocus
         />
 
-        {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
+        {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-6 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white font-medium py-2 transition"
+          className="w-full mt-6 rounded-lg bg-brand hover:bg-brand/90 disabled:opacity-60 text-white font-medium py-2 transition"
         >
           {loading ? "Ingresando…" : "Ingresar"}
         </button>
