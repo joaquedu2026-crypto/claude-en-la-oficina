@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "crypto";
-import { writeFile } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import { isAuthenticated } from "@/lib/auth";
 
 const ALLOWED_TYPES: Record<string, string> = {
@@ -33,12 +31,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "El archivo supera 8MB" }, { status: 400 });
   }
 
-  const filename = `${randomUUID()}.${extension}`;
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  const filePath = path.join(uploadsDir, filename);
+  const blob = await put(`uploads/${crypto.randomUUID()}.${extension}`, file, {
+    access: "public",
+  });
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filePath, buffer);
-
-  return NextResponse.json({ url: `/uploads/${filename}` });
+  return NextResponse.json({ url: blob.url });
 }
