@@ -12,28 +12,33 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border-soft bg-white">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Image src="/logo.webp" alt="Wanna Cosmetics" width={150} height={53} className="h-10 w-auto" />
-            <nav className="flex gap-4 text-sm">
-              <Link href="/admin" className="hover:text-brand font-medium">
-                Anuncios
-              </Link>
-              <Link href="/admin/catalogs" className="hover:text-brand font-medium">
-                Catálogos
-              </Link>
-              <Link href="/admin/socials" className="hover:text-brand font-medium">
-                Redes y contacto
-              </Link>
-              <Link href="/" className="hover:text-brand text-muted">
-                Ver sitio público ↗
-              </Link>
-            </nav>
+        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between gap-4 sm:gap-6">
+            <Image src="/logo.webp" alt="Wanna Cosmetics" width={170} height={60} className="h-12 w-auto flex-shrink-0" />
+            <div className="sm:hidden">
+              <LogoutButton />
+            </div>
           </div>
-          <LogoutButton />
+          <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <Link href="/admin" className="hover:text-brand font-medium whitespace-nowrap">
+              Anuncios
+            </Link>
+            <Link href="/admin/catalogs" className="hover:text-brand font-medium whitespace-nowrap">
+              Catálogos
+            </Link>
+            <Link href="/admin/socials" className="hover:text-brand font-medium whitespace-nowrap">
+              Redes y contacto
+            </Link>
+            <Link href="/" className="hover:text-brand text-muted whitespace-nowrap">
+              Ver sitio público ↗
+            </Link>
+          </nav>
+          <div className="hidden sm:block">
+            <LogoutButton />
+          </div>
         </div>
       </header>
-      <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+      <main className="max-w-5xl mx-auto px-4 py-8 overflow-x-hidden">{children}</main>
     </div>
   );
 }

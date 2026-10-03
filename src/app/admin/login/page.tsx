@@ -40,7 +40,7 @@ export default function LoginPage() {
         className="w-full max-w-sm bg-background border border-border-soft rounded-2xl p-8 shadow-sm"
       >
         <div className="flex justify-center mb-6">
-          <Image src="/logo.webp" alt="Wanna Cosmetics" width={260} height={91} className="h-auto w-[230px]" />
+          <Image src="/logo.webp" alt="Wanna Cosmetics" width={300} height={106} className="h-auto w-[90%] max-w-[270px]" />
         </div>
         <h1 className="text-base font-medium text-foreground mb-1 text-center">Panel de administración</h1>
         <p className="text-muted text-sm mb-6 text-center font-light">Ingresá la contraseña para continuar.</p>

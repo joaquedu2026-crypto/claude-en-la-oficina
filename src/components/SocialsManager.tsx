@@ -138,16 +138,22 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
           </select>
         </div>
 
-        {form.platform === "other" && (
-          <div>
-            <label className="block text-sm text-foreground mb-1">Nombre a mostrar</label>
-            <input
-              value={form.label}
-              onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-              className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
-            />
-          </div>
-        )}
+        <div>
+          <label className="block text-sm text-foreground mb-1">
+            {form.platform === "other" ? "Nombre a mostrar" : "Nombre o sucursal (opcional)"}
+          </label>
+          <input
+            value={form.label}
+            onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
+            placeholder={form.platform === "whatsapp" ? "ej: Sucursal Centro" : ""}
+            className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+          />
+          {form.platform !== "other" && (
+            <p className="text-xs text-muted mt-1">
+              Útil si vas a cargar más de un enlace de la misma red (ej. un WhatsApp por sucursal).
+            </p>
+          )}
+        </div>
 
         <div>
           <label className="block text-sm text-foreground mb-1">
@@ -201,7 +207,7 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
         {socials.map((social) => (
           <div
             key={social.id}
-            className="bg-white border border-border-soft rounded-xl p-4 flex gap-4 items-center"
+            className="bg-white border border-border-soft rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center"
           >
             <div className="h-10 w-10 rounded-full bg-brand-tint text-brand flex items-center justify-center flex-shrink-0">
               {social.imageUrl ? (
@@ -214,7 +220,11 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="font-medium truncate">
-                  {social.platform === "other" ? social.label : platformLabel(social.platform)}
+                  {social.platform === "other"
+                    ? social.label
+                    : social.label
+                      ? `${platformLabel(social.platform)} — ${social.label}`
+                      : platformLabel(social.platform)}
                 </h3>
                 {!social.published && (
                   <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
@@ -224,7 +234,7 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
               </div>
               <p className="text-sm text-muted truncate">{social.url}</p>
             </div>
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
               <button
                 onClick={() => togglePublished(social)}
                 className="text-xs px-3 py-1.5 rounded-lg bg-brand-tint hover:bg-brand-light/40 text-brand transition"

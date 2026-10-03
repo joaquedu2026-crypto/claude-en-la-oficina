@@ -25,29 +25,50 @@ export default async function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border-soft">
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col items-center text-center">
-          <Image src="/logo.webp" alt="Wanna Cosmetics" width={420} height={148} priority className="h-auto w-[320px] sm:w-[420px]" />
+          <Image src="/logo.webp" alt="Wanna Cosmetics" width={560} height={197} priority className="h-auto w-[90%] max-w-[380px] sm:max-w-[460px] md:max-w-[560px]" />
           <p className="mt-4 text-muted text-sm tracking-wide font-light">
             Novedades, promociones y catálogos
           </p>
           {socials.length > 0 && (
-            <div className="mt-6 flex items-center gap-3">
-              {socials.map((social) => (
-                <a
-                  key={social.id}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={social.platform === "other" ? social.label ?? "Enlace" : platformLabel(social.platform)}
-                  className="h-10 w-10 rounded-full bg-brand-tint text-brand flex items-center justify-center hover:bg-brand hover:text-white transition"
-                >
-                  {social.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={social.imageUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
-                  ) : (
-                    <SocialIcon platform={social.platform} className="h-5 w-5" />
-                  )}
-                </a>
-              ))}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {socials.map((social) => {
+                const icon = social.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={social.imageUrl} alt="" className="h-9 w-9 rounded-full object-cover" />
+                ) : (
+                  <SocialIcon platform={social.platform} className="h-5 w-5" />
+                );
+
+                if (social.label) {
+                  return (
+                    <a
+                      key={social.id}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-full bg-brand-tint text-brand hover:bg-brand hover:text-white transition pl-2 pr-4 py-1.5"
+                    >
+                      <span className="flex-shrink-0">{icon}</span>
+                      <span className="text-sm font-medium">
+                        {social.platform === "other" ? social.label : `${platformLabel(social.platform)} · ${social.label}`}
+                      </span>
+                    </a>
+                  );
+                }
+
+                return (
+                  <a
+                    key={social.id}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={platformLabel(social.platform)}
+                    className="h-10 w-10 rounded-full bg-brand-tint text-brand flex items-center justify-center hover:bg-brand hover:text-white transition"
+                  >
+                    {icon}
+                  </a>
+                );
+              })}
             </div>
           )}
         </div>

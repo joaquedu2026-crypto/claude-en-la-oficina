@@ -199,7 +199,7 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
         {ads.map((ad) => (
           <div
             key={ad.id}
-            className="bg-white border border-border-soft rounded-xl p-4 flex gap-4 items-start"
+            className="bg-white border border-border-soft rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-start"
           >
             {ad.imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -216,7 +216,7 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
               </div>
               <p className="text-sm text-muted line-clamp-2">{ad.description}</p>
             </div>
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
               <button
                 onClick={() => togglePublished(ad)}
                 className="text-xs px-3 py-1.5 rounded-lg bg-brand-tint hover:bg-brand-light/40 text-brand transition"
