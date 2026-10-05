@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
@@ -10,7 +9,7 @@ import { withRetry } from "@/lib/with-retry";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [ads, catalogs, socials] = await withRetry(() =>
+  const [ads, catalogs, socials, settings] = await withRetry(() =>
     Promise.all([
       prisma.ad.findMany({
         where: { published: true },
@@ -24,21 +23,28 @@ export default async function Home() {
         where: { published: true },
         orderBy: [{ order: "asc" }, { createdAt: "desc" }],
       }),
+      prisma.siteSettings.findUnique({ where: { id: "main" } }),
     ])
   );
 
   const galleryCatalogs = catalogs.filter((c) => c.showInGallery);
   const whatsappSocials = socials.filter((s) => s.platform === "whatsapp");
   const otherSocials = socials.filter((s) => s.platform !== "whatsapp");
+  const logoUrl = settings?.logoUrl || "/hero-logo.webp";
+  const backgroundImageUrl = settings?.backgroundImageUrl || null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div
+      className="min-h-screen bg-background text-foreground bg-cover bg-center bg-no-repeat"
+      style={backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : undefined}
+    >
       <WhatsappFloatingButton
         options={whatsappSocials.map((s, i) => ({ branch: s.label || `Contacto ${i + 1}`, url: s.url }))}
       />
 
-      <header className="border-b border-border-soft">
-        <Image src="/logo.webp" alt="Wanna Cosmetics" width={560} height={197} priority className="w-full h-auto" sizes="100vw" />
+      <header className="border-b border-border-soft bg-background/95 backdrop-blur-sm">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoUrl} alt="Wanna Cosmetics" className="w-full h-auto" />
         <div className="max-w-5xl mx-auto px-6 pb-10 pt-6 flex flex-col items-center text-center">
           <p className="text-muted text-sm tracking-wide font-light">
             Novedades, promociones y catálogos
@@ -89,7 +95,7 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-16 space-y-20">
+      <main className="max-w-5xl mx-auto my-8 px-6 py-16 space-y-20 bg-background/92 backdrop-blur-sm rounded-3xl shadow-sm">
         {galleryCatalogs.length > 0 && (
           <section>
             <h2 className="text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10">
@@ -232,7 +238,7 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-border-soft py-8 text-center">
+      <footer className="border-t border-border-soft py-8 text-center bg-background/95 backdrop-blur-sm">
         <a href="/admin" className="text-xs text-muted hover:text-brand transition font-light">
           Panel de administración
         </a>
