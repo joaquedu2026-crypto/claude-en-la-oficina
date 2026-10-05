@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAuthenticated } from "@/lib/auth";
+import { withRetry } from "@/lib/with-retry";
 
 export async function GET() {
-  const settings = await prisma.siteSettings.findUnique({ where: { id: "main" } });
+  const settings = await withRetry(() => prisma.siteSettings.findUnique({ where: { id: "main" } }));
   return NextResponse.json(settings);
 }
 
@@ -17,19 +18,21 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  const settings = await prisma.siteSettings.upsert({
-    where: { id: "main" },
-    create: {
-      id: "main",
-      logoUrl: typeof body.logoUrl === "string" && body.logoUrl ? body.logoUrl : null,
-      backgroundImageUrl:
-        typeof body.backgroundImageUrl === "string" && body.backgroundImageUrl ? body.backgroundImageUrl : null,
-    },
-    update: {
-      logoUrl: body.logoUrl === undefined ? undefined : body.logoUrl || null,
-      backgroundImageUrl: body.backgroundImageUrl === undefined ? undefined : body.backgroundImageUrl || null,
-    },
-  });
+  const settings = await withRetry(() =>
+    prisma.siteSettings.upsert({
+      where: { id: "main" },
+      create: {
+        id: "main",
+        logoUrl: typeof body.logoUrl === "string" && body.logoUrl ? body.logoUrl : null,
+        backgroundImageUrl:
+          typeof body.backgroundImageUrl === "string" && body.backgroundImageUrl ? body.backgroundImageUrl : null,
+      },
+      update: {
+        logoUrl: body.logoUrl === undefined ? undefined : body.logoUrl || null,
+        backgroundImageUrl: body.backgroundImageUrl === undefined ? undefined : body.backgroundImageUrl || null,
+      },
+    })
+  );
 
   return NextResponse.json(settings);
 }
