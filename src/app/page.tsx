@@ -3,8 +3,14 @@ import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 import AdBranchLinkButton from "@/components/AdBranchLinkButton";
 import ShareButton from "@/components/ShareButton";
-import WhatsappFloatingButton from "@/components/WhatsappFloatingButton";
+import WhatsappFloatingButton, {
+  floatingButtonClasses,
+  floatingIconClasses,
+  floatingLabelClasses,
+} from "@/components/WhatsappFloatingButton";
 import { withRetry } from "@/lib/with-retry";
+
+const SOCIAL_PRIORITY: Record<string, number> = { instagram: 0, facebook: 1 };
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +35,9 @@ export default async function Home() {
 
   const galleryCatalogs = catalogs.filter((c) => c.showInGallery);
   const whatsappSocials = socials.filter((s) => s.platform === "whatsapp");
-  const otherSocials = socials.filter((s) => s.platform !== "whatsapp");
+  const otherSocials = socials
+    .filter((s) => s.platform !== "whatsapp")
+    .sort((a, b) => (SOCIAL_PRIORITY[a.platform] ?? 99) - (SOCIAL_PRIORITY[b.platform] ?? 99));
   const logoUrl = settings?.logoUrl || "/hero-logo.webp";
   const backgroundImageUrl = settings?.backgroundImageUrl || null;
 
@@ -38,9 +46,34 @@ export default async function Home() {
       className="min-h-screen bg-background text-foreground bg-cover bg-center bg-no-repeat bg-fixed"
       style={backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : undefined}
     >
-      <WhatsappFloatingButton
-        options={whatsappSocials.map((s, i) => ({ branch: s.label || `Contacto ${i + 1}`, url: s.url }))}
-      />
+      {(whatsappSocials.length > 0 || otherSocials.length > 0) && (
+        <div className="fixed right-2 sm:right-4 bottom-4 z-30 flex flex-col items-end gap-2">
+          <WhatsappFloatingButton
+            options={whatsappSocials.map((s, i) => ({ branch: s.label || `Contacto ${i + 1}`, url: s.url }))}
+          />
+          {otherSocials.map((social) => {
+            const icon = social.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={social.imageUrl} alt="" className={`${floatingIconClasses} rounded-full object-cover`} />
+            ) : (
+              <SocialIcon platform={social.platform} className={floatingIconClasses} />
+            );
+
+            const label = social.label
+              ? social.platform === "other"
+                ? social.label
+                : `${platformLabel(social.platform)} · ${social.label}`
+              : platformLabel(social.platform);
+
+            return (
+              <a key={social.id} href={social.url} target="_blank" rel="noopener noreferrer" className={floatingButtonClasses}>
+                {icon}
+                <span className={floatingLabelClasses}>{label}</span>
+              </a>
+            );
+          })}
+        </div>
+      )}
 
       <header className="border-b border-border-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -49,48 +82,6 @@ export default async function Home() {
           <p className="text-muted text-sm tracking-wide font-light bg-background/90 backdrop-blur-sm px-4 py-1.5 rounded-full">
             Novedades, promociones y catálogos
           </p>
-          {otherSocials.length > 0 && (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {otherSocials.map((social) => {
-                const icon = social.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={social.imageUrl} alt="" className="h-7 w-7 sm:h-9 sm:w-9 rounded-full object-cover" />
-                ) : (
-                  <SocialIcon platform={social.platform} className="h-7 w-7 sm:h-9 sm:w-9" />
-                );
-
-                if (social.label) {
-                  return (
-                    <a
-                      key={social.id}
-                      href={social.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white border border-border-soft hover:shadow-md hover:-translate-y-0.5 transition pl-1.5 pr-3 py-1 sm:pl-2 sm:pr-4 sm:py-1.5"
-                    >
-                      <span className="flex-shrink-0">{icon}</span>
-                      <span className="text-xs sm:text-sm font-medium text-brand">
-                        {social.platform === "other" ? social.label : `${platformLabel(social.platform)} · ${social.label}`}
-                      </span>
-                    </a>
-                  );
-                }
-
-                return (
-                  <a
-                    key={social.id}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={platformLabel(social.platform)}
-                    className="flex items-center justify-center hover:-translate-y-0.5 hover:drop-shadow-md transition"
-                  >
-                    {icon}
-                  </a>
-                );
-              })}
-            </div>
-          )}
           <ShareButton />
         </div>
       </header>
