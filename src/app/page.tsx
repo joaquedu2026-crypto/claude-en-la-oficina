@@ -143,10 +143,13 @@ export default async function Home() {
                 return (
                   <article
                     key={ad.id}
-                    className={`bg-white border border-border-soft rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition ${ad.fullWidth ? "sm:col-span-2" : ""}`}
+                    className={`bg-white border border-border-soft rounded-2xl flex flex-col shadow-sm hover:shadow-md transition ${ad.fullWidth ? "sm:col-span-2" : ""}`}
                   >
                     {uploadedVideo ? (
-                      <div className={hasCustomSize ? "mx-auto" : "aspect-video"} style={mediaStyle}>
+                      <div
+                        className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
+                        style={mediaStyle}
+                      >
                         <video
                           src={uploadedVideo}
                           controls
@@ -154,7 +157,10 @@ export default async function Home() {
                         />
                       </div>
                     ) : embedUrl ? (
-                      <div className={hasCustomSize ? "mx-auto" : "aspect-video"} style={mediaStyle}>
+                      <div
+                        className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
+                        style={mediaStyle}
+                      >
                         <iframe
                           src={embedUrl}
                           title={ad.title}
@@ -167,7 +173,7 @@ export default async function Home() {
                       <img
                         src={ad.imageUrl}
                         alt={ad.title}
-                        className={hasCustomSize ? "mx-auto" : "w-full aspect-video object-cover"}
+                        className={`rounded-t-2xl ${hasCustomSize ? "mx-auto" : "w-full aspect-video object-cover"}`}
                         style={mediaStyle}
                       />
                     ) : null}
