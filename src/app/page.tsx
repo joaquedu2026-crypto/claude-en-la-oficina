@@ -36,7 +36,7 @@ export default async function Home() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={social.imageUrl} alt="" className="h-9 w-9 rounded-full object-cover" />
                 ) : (
-                  <SocialIcon platform={social.platform} className="h-5 w-5" />
+                  <SocialIcon platform={social.platform} className="h-9 w-9" />
                 );
 
                 if (social.label) {
@@ -46,10 +46,10 @@ export default async function Home() {
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-full bg-brand-tint text-brand hover:bg-brand hover:text-white transition pl-2 pr-4 py-1.5"
+                      className="flex items-center gap-2 rounded-full bg-white border border-border-soft hover:shadow-md hover:-translate-y-0.5 transition pl-2 pr-4 py-1.5"
                     >
                       <span className="flex-shrink-0">{icon}</span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium text-brand">
                         {social.platform === "other" ? social.label : `${platformLabel(social.platform)} · ${social.label}`}
                       </span>
                     </a>
@@ -63,7 +63,7 @@ export default async function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                     title={platformLabel(social.platform)}
-                    className="h-10 w-10 rounded-full bg-brand-tint text-brand flex items-center justify-center hover:bg-brand hover:text-white transition"
+                    className="flex items-center justify-center hover:-translate-y-0.5 hover:drop-shadow-md transition"
                   >
                     {icon}
                   </a>

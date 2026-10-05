@@ -206,12 +206,12 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
             key={social.id}
             className="bg-white border border-border-soft rounded-xl p-4 flex flex-col sm:flex-row gap-4 sm:items-center"
           >
-            <div className="h-10 w-10 rounded-full bg-brand-tint text-brand flex items-center justify-center flex-shrink-0">
+            <div className="h-10 w-10 flex items-center justify-center flex-shrink-0">
               {social.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={social.imageUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
               ) : (
-                <SocialIcon platform={social.platform} className="h-5 w-5" />
+                <SocialIcon platform={social.platform} className="h-10 w-10" />
               )}
             </div>
             <div className="flex-1 min-w-0">
