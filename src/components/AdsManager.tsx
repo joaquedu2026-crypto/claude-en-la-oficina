@@ -22,10 +22,14 @@ type Catalog = {
   id: string;
   name: string;
   url: string;
+  branch: string | null;
+  category: string | null;
 };
 
-const NO_LINK = "__none__";
-const CUSTOM_LINK = "__custom__";
+const NO_LINK = "none";
+const CATALOG_LINK = "catalog";
+const CUSTOM_LINK = "custom";
+const GENERAL_GROUP = "__general__";
 
 const emptyForm = {
   title: "",
@@ -48,24 +52,44 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  function linkModeFor(link: string): string {
-    if (!link) return NO_LINK;
-    const match = catalogs.find((c) => c.url === link);
-    return match ? match.id : CUSTOM_LINK;
+  const branches = Array.from(new Set(catalogs.filter((c) => c.branch).map((c) => c.branch as string)));
+  const hasBranches = branches.length > 0;
+  const hasGeneralCatalogs = catalogs.some((c) => !c.branch);
+
+  function catalogsForBranchGroup(group: string): Catalog[] {
+    return group === GENERAL_GROUP ? catalogs.filter((c) => !c.branch) : catalogs.filter((c) => c.branch === group);
   }
 
-  const [linkMode, setLinkMode] = useState(NO_LINK);
+  function resolveLinkState(link: string) {
+    if (!link) return { linkType: NO_LINK, catalogId: "", branchGroup: "" };
+    const match = catalogs.find((c) => c.url === link);
+    if (!match) return { linkType: CUSTOM_LINK, catalogId: "", branchGroup: "" };
+    return { linkType: CATALOG_LINK, catalogId: match.id, branchGroup: match.branch ?? GENERAL_GROUP };
+  }
 
-  function handleLinkModeChange(value: string) {
-    setLinkMode(value);
-    if (value === NO_LINK) {
+  const [linkType, setLinkType] = useState(NO_LINK);
+  const [selectedBranchGroup, setSelectedBranchGroup] = useState("");
+  const [selectedCatalogId, setSelectedCatalogId] = useState("");
+
+  function handleLinkTypeChange(value: string) {
+    setLinkType(value);
+    setSelectedBranchGroup("");
+    setSelectedCatalogId("");
+    if (value !== CUSTOM_LINK) {
       setForm((f) => ({ ...f, link: "" }));
-    } else if (value === CUSTOM_LINK) {
-      setForm((f) => ({ ...f, link: linkModeFor(f.link) === CUSTOM_LINK ? f.link : "" }));
-    } else {
-      const catalog = catalogs.find((c) => c.id === value);
-      setForm((f) => ({ ...f, link: catalog?.url ?? "" }));
     }
+  }
+
+  function handleBranchGroupChange(value: string) {
+    setSelectedBranchGroup(value);
+    setSelectedCatalogId("");
+    setForm((f) => ({ ...f, link: "" }));
+  }
+
+  function handleCatalogIdChange(value: string) {
+    setSelectedCatalogId(value);
+    const catalog = catalogs.find((c) => c.id === value);
+    setForm((f) => ({ ...f, link: catalog?.url ?? "" }));
   }
 
   function startEdit(ad: Ad) {
@@ -82,13 +106,18 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
       fullWidth: ad.fullWidth,
       order: String(ad.order),
     });
-    setLinkMode(linkModeFor(link));
+    const state = resolveLinkState(link);
+    setLinkType(state.linkType);
+    setSelectedCatalogId(state.catalogId);
+    setSelectedBranchGroup(state.branchGroup);
   }
 
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
-    setLinkMode(NO_LINK);
+    setLinkType(NO_LINK);
+    setSelectedBranchGroup("");
+    setSelectedCatalogId("");
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -261,19 +290,65 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
         <div>
           <label className="block text-sm text-foreground mb-1">¿A dónde lleva el botón &quot;Ver más&quot;? (opcional)</label>
           <select
-            value={linkMode}
-            onChange={(e) => handleLinkModeChange(e.target.value)}
+            value={linkType}
+            onChange={(e) => handleLinkTypeChange(e.target.value)}
             className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
           >
             <option value={NO_LINK}>Sin enlace</option>
-            {catalogs.map((c) => (
-              <option key={c.id} value={c.id}>
-                Catálogo: {c.name}
-              </option>
-            ))}
+            <option value={CATALOG_LINK}>Un catálogo</option>
             <option value={CUSTOM_LINK}>Otro enlace (escribir manualmente)</option>
           </select>
-          {linkMode === CUSTOM_LINK && (
+
+          {linkType === CATALOG_LINK && (
+            <div className="mt-2 space-y-2">
+              {hasBranches ? (
+                <>
+                  <select
+                    value={selectedBranchGroup}
+                    onChange={(e) => handleBranchGroupChange(e.target.value)}
+                    className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+                  >
+                    <option value="">Elegí una sucursal…</option>
+                    {branches.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                    {hasGeneralCatalogs && <option value={GENERAL_GROUP}>Catálogos generales</option>}
+                  </select>
+                  {selectedBranchGroup && (
+                    <select
+                      value={selectedCatalogId}
+                      onChange={(e) => handleCatalogIdChange(e.target.value)}
+                      className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+                    >
+                      <option value="">Elegí una categoría…</option>
+                      {catalogsForBranchGroup(selectedBranchGroup).map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.category || c.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </>
+              ) : (
+                <select
+                  value={selectedCatalogId}
+                  onChange={(e) => handleCatalogIdChange(e.target.value)}
+                  className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+                >
+                  <option value="">Elegí un catálogo…</option>
+                  {catalogs.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
+          {linkType === CUSTOM_LINK && (
             <input
               value={form.link}
               onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}

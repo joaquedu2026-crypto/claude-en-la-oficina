@@ -9,11 +9,13 @@ type Catalog = {
   description: string | null;
   url: string;
   imageUrl: string | null;
+  branch: string | null;
+  category: string | null;
   published: boolean;
   order: number;
 };
 
-const emptyForm = { name: "", description: "", url: "", imageUrl: "" };
+const emptyForm = { name: "", description: "", url: "", imageUrl: "", branch: "", category: "" };
 
 export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: Catalog[] }) {
   const [catalogs, setCatalogs] = useState<Catalog[]>(initialCatalogs);
@@ -30,6 +32,8 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
       description: catalog.description ?? "",
       url: catalog.url,
       imageUrl: catalog.imageUrl ?? "",
+      branch: catalog.branch ?? "",
+      category: catalog.category ?? "",
     });
   }
 
@@ -134,6 +138,30 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
           />
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm text-foreground mb-1">Sucursal (opcional)</label>
+            <input
+              value={form.branch}
+              onChange={(e) => setForm((f) => ({ ...f, branch: e.target.value }))}
+              placeholder="ej: Rio Gallegos"
+              className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-foreground mb-1">Categoría (opcional)</label>
+            <input
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+              placeholder="ej: Maquillaje"
+              className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+            />
+          </div>
+        </div>
+        <p className="text-xs text-muted -mt-2">
+          Si cargás sucursal y categoría, vas a poder elegir este catálogo puntual desde el selector de enlace de los anuncios (sucursal → categoría).
+        </p>
+
         <div>
           <label className="block text-sm text-foreground mb-1">Descripción (opcional)</label>
           <textarea
@@ -193,11 +221,21 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
               />
             )}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-medium truncate">{catalog.name}</h3>
                 {!catalog.published && (
                   <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
                     Oculto
+                  </span>
+                )}
+                {catalog.branch && (
+                  <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
+                    {catalog.branch}
+                  </span>
+                )}
+                {catalog.category && (
+                  <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
+                    {catalog.category}
                   </span>
                 )}
               </div>
