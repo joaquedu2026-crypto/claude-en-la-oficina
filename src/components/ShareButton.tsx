@@ -30,9 +30,9 @@ export default function ShareButton() {
     <button
       type="button"
       onClick={handleShare}
-      className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand hover:bg-brand/90 text-white px-5 py-2.5 text-sm font-medium transition"
+      className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-brand hover:bg-brand/90 text-white px-3.5 py-1.5 text-xs font-medium transition"
     >
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <circle cx="18" cy="5" r="3" />
         <circle cx="6" cy="12" r="3" />
         <circle cx="18" cy="19" r="3" />

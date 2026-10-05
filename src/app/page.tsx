@@ -57,7 +57,6 @@ export default async function Home() {
           <p className="text-muted text-sm tracking-wide font-light">
             Novedades, promociones y catálogos
           </p>
-          <ShareButton />
           {otherSocials.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               {otherSocials.map((social) => {
@@ -100,6 +99,7 @@ export default async function Home() {
               })}
             </div>
           )}
+          <ShareButton />
         </div>
       </header>
 
