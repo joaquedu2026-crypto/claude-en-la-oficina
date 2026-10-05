@@ -1,9 +1,13 @@
-import { upload } from "@vercel/blob/client";
-
 export async function uploadFile(file: File): Promise<string> {
-  const blob = await upload(file.name, file, {
-    access: "public",
-    handleUploadUrl: "/api/upload",
-  });
-  return blob.url;
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("/api/upload", { method: "POST", body: formData });
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error ?? "Error al subir el archivo");
+  }
+
+  return data.url;
 }
