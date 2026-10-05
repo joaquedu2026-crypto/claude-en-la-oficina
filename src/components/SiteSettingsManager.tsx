@@ -40,18 +40,23 @@ export default function SiteSettingsManager({ initialSettings }: { initialSettin
     setSaving(true);
     setError("");
     setSaved(false);
-    const res = await fetch("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ logoUrl, backgroundImageUrl }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      setError("Error al guardar los cambios");
-      return;
+    try {
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logoUrl, backgroundImageUrl }),
+      });
+      if (!res.ok) {
+        setError("Error al guardar los cambios");
+        return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch {
+      setError("Error de conexión. Probá de nuevo.");
+    } finally {
+      setSaving(false);
     }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
   }
 
   return (

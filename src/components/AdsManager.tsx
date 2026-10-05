@@ -186,31 +186,36 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
 
     const url = editingId ? `/api/ads/${editingId}` : "/api/ads";
     const method = editingId ? "PUT" : "POST";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setSaving(false);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) {
-      setError(data.error ?? "Error al guardar");
-      return;
-    }
+      if (!res.ok) {
+        setError(data.error ?? "Error al guardar");
+        return;
+      }
 
-    if (editingId) {
-      setAds((prev) => prev.map((a) => (a.id === editingId ? data : a)).sort((a, b) => a.order - b.order));
-    } else {
-      setAds((prev) => [...prev, data].sort((a, b) => a.order - b.order));
+      if (editingId) {
+        setAds((prev) => prev.map((a) => (a.id === editingId ? data : a)).sort((a, b) => a.order - b.order));
+      } else {
+        setAds((prev) => [...prev, data].sort((a, b) => a.order - b.order));
+      }
+      cancelEdit();
+    } catch {
+      setError("Error de conexión. Probá de nuevo.");
+    } finally {
+      setSaving(false);
     }
-    cancelEdit();
   }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar este anuncio?")) return;
-    const res = await fetch(`/api/ads/${id}`, { method: "DELETE" });
-    if (res.ok) {
+    const res = await fetch(`/api/ads/${id}`, { method: "DELETE" }).catch(() => null);
+    if (res?.ok) {
       setAds((prev) => prev.filter((a) => a.id !== id));
     }
   }
@@ -220,9 +225,9 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ published: !ad.published }),
-    });
-    const data = await res.json();
-    if (res.ok) {
+    }).catch(() => null);
+    const data = await res?.json().catch(() => null);
+    if (res?.ok && data) {
       setAds((prev) => prev.map((a) => (a.id === ad.id ? data : a)));
     }
   }
@@ -233,9 +238,9 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ order: newOrder }),
-    });
-    const data = await res.json();
-    if (res.ok) {
+    }).catch(() => null);
+    const data = await res?.json().catch(() => null);
+    if (res?.ok && data) {
       setAds((prev) => prev.map((a) => (a.id === ad.id ? data : a)).sort((a, b) => a.order - b.order));
     }
   }

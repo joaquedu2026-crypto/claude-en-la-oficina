@@ -78,31 +78,36 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
 
     const url = editingId ? `/api/catalogs/${editingId}` : "/api/catalogs";
     const method = editingId ? "PUT" : "POST";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    setSaving(false);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) {
-      setError(data.error ?? "Error al guardar");
-      return;
-    }
+      if (!res.ok) {
+        setError(data.error ?? "Error al guardar");
+        return;
+      }
 
-    if (editingId) {
-      setCatalogs((prev) => prev.map((c) => (c.id === editingId ? data : c)));
-    } else {
-      setCatalogs((prev) => [data, ...prev]);
+      if (editingId) {
+        setCatalogs((prev) => prev.map((c) => (c.id === editingId ? data : c)));
+      } else {
+        setCatalogs((prev) => [data, ...prev]);
+      }
+      cancelEdit();
+    } catch {
+      setError("Error de conexión. Probá de nuevo.");
+    } finally {
+      setSaving(false);
     }
-    cancelEdit();
   }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar este catálogo?")) return;
-    const res = await fetch(`/api/catalogs/${id}`, { method: "DELETE" });
-    if (res.ok) {
+    const res = await fetch(`/api/catalogs/${id}`, { method: "DELETE" }).catch(() => null);
+    if (res?.ok) {
       setCatalogs((prev) => prev.filter((c) => c.id !== id));
     }
   }
@@ -112,9 +117,9 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ published: !catalog.published }),
-    });
-    const data = await res.json();
-    if (res.ok) {
+    }).catch(() => null);
+    const data = await res?.json().catch(() => null);
+    if (res?.ok && data) {
       setCatalogs((prev) => prev.map((c) => (c.id === catalog.id ? data : c)));
     }
   }

@@ -69,31 +69,36 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
 
     const url = editingId ? `/api/socials/${editingId}` : "/api/socials";
     const method = editingId ? "PUT" : "POST";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    setSaving(false);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
 
-    if (!res.ok) {
-      setError(data.error ?? "Error al guardar");
-      return;
-    }
+      if (!res.ok) {
+        setError(data.error ?? "Error al guardar");
+        return;
+      }
 
-    if (editingId) {
-      setSocials((prev) => prev.map((s) => (s.id === editingId ? data : s)));
-    } else {
-      setSocials((prev) => [data, ...prev]);
+      if (editingId) {
+        setSocials((prev) => prev.map((s) => (s.id === editingId ? data : s)));
+      } else {
+        setSocials((prev) => [data, ...prev]);
+      }
+      cancelEdit();
+    } catch {
+      setError("Error de conexión. Probá de nuevo.");
+    } finally {
+      setSaving(false);
     }
-    cancelEdit();
   }
 
   async function handleDelete(id: string) {
     if (!confirm("¿Eliminar este enlace?")) return;
-    const res = await fetch(`/api/socials/${id}`, { method: "DELETE" });
-    if (res.ok) {
+    const res = await fetch(`/api/socials/${id}`, { method: "DELETE" }).catch(() => null);
+    if (res?.ok) {
       setSocials((prev) => prev.filter((s) => s.id !== id));
     }
   }
@@ -103,9 +108,9 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ published: !social.published }),
-    });
-    const data = await res.json();
-    if (res.ok) {
+    }).catch(() => null);
+    const data = await res?.json().catch(() => null);
+    if (res?.ok && data) {
       setSocials((prev) => prev.map((s) => (s.id === social.id ? data : s)));
     }
   }
