@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAuthenticated } from "@/lib/auth";
+import { normalizeUrl } from "@/lib/normalize-url";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAuthenticated())) {
@@ -19,8 +20,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       title: typeof body.title === "string" ? body.title.trim() : undefined,
       description: typeof body.description === "string" ? body.description.trim() : undefined,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl || null : undefined,
-      videoUrl: typeof body.videoUrl === "string" ? body.videoUrl || null : undefined,
-      link: typeof body.link === "string" ? body.link || null : undefined,
+      videoUrl: typeof body.videoUrl === "string" ? (body.videoUrl ? normalizeUrl(body.videoUrl) : null) : undefined,
+      link: typeof body.link === "string" ? (body.link ? normalizeUrl(body.link) : null) : undefined,
       mediaWidth: body.mediaWidth === null || typeof body.mediaWidth === "number" ? body.mediaWidth : undefined,
       mediaHeight: body.mediaHeight === null || typeof body.mediaHeight === "number" ? body.mediaHeight : undefined,
       fullWidth: typeof body.fullWidth === "boolean" ? body.fullWidth : undefined,

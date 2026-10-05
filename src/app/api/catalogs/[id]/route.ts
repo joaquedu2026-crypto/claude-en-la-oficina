@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAuthenticated } from "@/lib/auth";
+import { normalizeUrl } from "@/lib/normalize-url";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await isAuthenticated())) {
@@ -17,7 +18,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     where: { id },
     data: {
       name: typeof body.name === "string" ? body.name.trim() : undefined,
-      url: typeof body.url === "string" ? body.url.trim() : undefined,
+      url: typeof body.url === "string" ? normalizeUrl(body.url.trim()) : undefined,
       description: typeof body.description === "string" ? body.description || null : undefined,
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl || null : undefined,
       published: typeof body.published === "boolean" ? body.published : undefined,

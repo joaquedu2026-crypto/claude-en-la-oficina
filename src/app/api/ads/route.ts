@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAuthenticated } from "@/lib/auth";
+import { normalizeUrl } from "@/lib/normalize-url";
 
 export async function GET() {
   const ads = await prisma.ad.findMany({ orderBy: [{ order: "asc" }, { createdAt: "desc" }] });
@@ -25,8 +26,8 @@ export async function POST(request: NextRequest) {
       title,
       description,
       imageUrl: typeof body?.imageUrl === "string" && body.imageUrl ? body.imageUrl : null,
-      videoUrl: typeof body?.videoUrl === "string" && body.videoUrl ? body.videoUrl : null,
-      link: typeof body?.link === "string" && body.link ? body.link : null,
+      videoUrl: typeof body?.videoUrl === "string" && body.videoUrl ? normalizeUrl(body.videoUrl) : null,
+      link: typeof body?.link === "string" && body.link ? normalizeUrl(body.link) : null,
       mediaWidth: typeof body?.mediaWidth === "number" ? body.mediaWidth : null,
       mediaHeight: typeof body?.mediaHeight === "number" ? body.mediaHeight : null,
       fullWidth: body?.fullWidth === true,

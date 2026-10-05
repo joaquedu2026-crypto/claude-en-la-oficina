@@ -154,7 +154,7 @@ export default function SocialsManager({ initialSocials }: { initialSocials: Soc
 
         <div>
           <label className="block text-sm text-foreground mb-1">
-            Enlace {form.platform === "whatsapp" && "(ej: https://wa.me/5491122334455)"}
+            Enlace {form.platform === "whatsapp" && "(solo el número con código de país, ej: 5491122334455)"}
           </label>
           <input
             value={form.url}
