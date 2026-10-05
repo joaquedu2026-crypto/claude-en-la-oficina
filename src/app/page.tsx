@@ -35,18 +35,18 @@ export default async function Home() {
 
   return (
     <div
-      className="min-h-screen bg-background text-foreground bg-cover bg-center bg-no-repeat"
+      className="min-h-screen bg-background text-foreground bg-cover bg-center bg-no-repeat bg-fixed"
       style={backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : undefined}
     >
       <WhatsappFloatingButton
         options={whatsappSocials.map((s, i) => ({ branch: s.label || `Contacto ${i + 1}`, url: s.url }))}
       />
 
-      <header className="border-b border-border-soft bg-background/95 backdrop-blur-sm">
+      <header className="border-b border-border-soft">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={logoUrl} alt="Wanna Cosmetics" className="w-full h-auto" />
         <div className="max-w-5xl mx-auto px-6 pb-10 pt-6 flex flex-col items-center text-center">
-          <p className="text-muted text-sm tracking-wide font-light">
+          <p className="text-muted text-sm tracking-wide font-light bg-background/90 backdrop-blur-sm px-4 py-1.5 rounded-full">
             Novedades, promociones y catálogos
           </p>
           {otherSocials.length > 0 && (
@@ -95,10 +95,10 @@ export default async function Home() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto my-8 px-6 py-16 space-y-20 bg-background/92 backdrop-blur-sm rounded-3xl shadow-sm">
+      <main className="max-w-5xl mx-auto px-6 py-16 space-y-20">
         {galleryCatalogs.length > 0 && (
           <section>
-            <h2 className="text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10">
+            <h2 className="mx-auto w-fit text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
               Catálogos
             </h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
@@ -139,11 +139,13 @@ export default async function Home() {
         )}
 
         <section>
-          <h2 className="text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10">
+          <h2 className="mx-auto w-fit text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
             Anuncios y publicaciones
           </h2>
           {ads.length === 0 ? (
-            <p className="text-center text-muted font-light">Todavía no hay anuncios publicados.</p>
+            <p className="mx-auto w-fit text-center text-muted font-light bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
+              Todavía no hay anuncios publicados.
+            </p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-7">
               {ads.map((ad) => {
@@ -238,8 +240,11 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-border-soft py-8 text-center bg-background/95 backdrop-blur-sm">
-        <a href="/admin" className="text-xs text-muted hover:text-brand transition font-light">
+      <footer className="border-t border-border-soft py-8 text-center">
+        <a
+          href="/admin"
+          className="text-xs text-muted hover:text-brand transition font-light bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-full"
+        >
           Panel de administración
         </a>
       </footer>
