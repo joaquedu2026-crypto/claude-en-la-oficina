@@ -18,6 +18,15 @@ type Ad = {
   order: number;
 };
 
+type Catalog = {
+  id: string;
+  name: string;
+  url: string;
+};
+
+const NO_LINK = "__none__";
+const CUSTOM_LINK = "__custom__";
+
 const emptyForm = {
   title: "",
   description: "",
@@ -30,7 +39,7 @@ const emptyForm = {
   order: "0",
 };
 
-export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
+export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[]; catalogs: Catalog[] }) {
   const [ads, setAds] = useState<Ad[]>(initialAds);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -39,24 +48,47 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  function linkModeFor(link: string): string {
+    if (!link) return NO_LINK;
+    const match = catalogs.find((c) => c.url === link);
+    return match ? match.id : CUSTOM_LINK;
+  }
+
+  const [linkMode, setLinkMode] = useState(NO_LINK);
+
+  function handleLinkModeChange(value: string) {
+    setLinkMode(value);
+    if (value === NO_LINK) {
+      setForm((f) => ({ ...f, link: "" }));
+    } else if (value === CUSTOM_LINK) {
+      setForm((f) => ({ ...f, link: linkModeFor(f.link) === CUSTOM_LINK ? f.link : "" }));
+    } else {
+      const catalog = catalogs.find((c) => c.id === value);
+      setForm((f) => ({ ...f, link: catalog?.url ?? "" }));
+    }
+  }
+
   function startEdit(ad: Ad) {
     setEditingId(ad.id);
+    const link = ad.link ?? "";
     setForm({
       title: ad.title,
       description: ad.description,
       imageUrl: ad.imageUrl ?? "",
       videoUrl: ad.videoUrl ?? "",
-      link: ad.link ?? "",
+      link,
       mediaWidth: ad.mediaWidth != null ? String(ad.mediaWidth) : "",
       mediaHeight: ad.mediaHeight != null ? String(ad.mediaHeight) : "",
       fullWidth: ad.fullWidth,
       order: String(ad.order),
     });
+    setLinkMode(linkModeFor(link));
   }
 
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
+    setLinkMode(NO_LINK);
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -227,13 +259,28 @@ export default function AdsManager({ initialAds }: { initialAds: Ad[] }) {
         </div>
 
         <div>
-          <label className="block text-sm text-foreground mb-1">Enlace (opcional)</label>
-          <input
-            value={form.link}
-            onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
-            placeholder="https://..."
+          <label className="block text-sm text-foreground mb-1">¿A dónde lleva el botón &quot;Ver más&quot;? (opcional)</label>
+          <select
+            value={linkMode}
+            onChange={(e) => handleLinkModeChange(e.target.value)}
             className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
-          />
+          >
+            <option value={NO_LINK}>Sin enlace</option>
+            {catalogs.map((c) => (
+              <option key={c.id} value={c.id}>
+                Catálogo: {c.name}
+              </option>
+            ))}
+            <option value={CUSTOM_LINK}>Otro enlace (escribir manualmente)</option>
+          </select>
+          {linkMode === CUSTOM_LINK && (
+            <input
+              value={form.link}
+              onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
+              placeholder="https://..."
+              className="w-full mt-2 rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+            />
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
