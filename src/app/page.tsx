@@ -5,24 +5,27 @@ import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 import AdBranchLinkButton from "@/components/AdBranchLinkButton";
 import ShareButton from "@/components/ShareButton";
 import WhatsappFloatingButton from "@/components/WhatsappFloatingButton";
+import { withRetry } from "@/lib/with-retry";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [ads, catalogs, socials] = await Promise.all([
-    prisma.ad.findMany({
-      where: { published: true },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-    }),
-    prisma.catalog.findMany({
-      where: { published: true },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-    }),
-    prisma.socialLink.findMany({
-      where: { published: true },
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-    }),
-  ]);
+  const [ads, catalogs, socials] = await withRetry(() =>
+    Promise.all([
+      prisma.ad.findMany({
+        where: { published: true },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      }),
+      prisma.catalog.findMany({
+        where: { published: true },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      }),
+      prisma.socialLink.findMany({
+        where: { published: true },
+        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+      }),
+    ])
+  );
 
   const galleryCatalogs = catalogs.filter((c) => c.showInGallery);
   const whatsappSocials = socials.filter((s) => s.platform === "whatsapp");
