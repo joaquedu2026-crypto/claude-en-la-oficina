@@ -11,11 +11,20 @@ type Catalog = {
   imageUrl: string | null;
   branch: string | null;
   category: string | null;
+  showInGallery: boolean;
   published: boolean;
   order: number;
 };
 
-const emptyForm = { name: "", description: "", url: "", imageUrl: "", branch: "", category: "" };
+const emptyForm = {
+  name: "",
+  description: "",
+  url: "",
+  imageUrl: "",
+  branch: "",
+  category: "",
+  showInGallery: true,
+};
 
 export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: Catalog[] }) {
   const [catalogs, setCatalogs] = useState<Catalog[]>(initialCatalogs);
@@ -34,6 +43,7 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
       imageUrl: catalog.imageUrl ?? "",
       branch: catalog.branch ?? "",
       category: catalog.category ?? "",
+      showInGallery: catalog.showInGallery,
     });
   }
 
@@ -162,6 +172,19 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
           Si cargás sucursal y categoría, vas a poder elegir este catálogo puntual desde el selector de enlace de los anuncios (sucursal → categoría).
         </p>
 
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            checked={form.showInGallery}
+            onChange={(e) => setForm((f) => ({ ...f, showInGallery: e.target.checked }))}
+            className="rounded border-border-soft"
+          />
+          Mostrar como tarjeta en la sección de Catálogos del sitio
+        </label>
+        <p className="text-xs text-muted -mt-2">
+          Desmarcalo si este catálogo es solo para usar en el selector de sucursal de los anuncios, y no querés que aparezca como una tarjeta más en la página.
+        </p>
+
         <div>
           <label className="block text-sm text-foreground mb-1">Descripción (opcional)</label>
           <textarea
@@ -236,6 +259,11 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
                 {catalog.category && (
                   <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
                     {catalog.category}
+                  </span>
+                )}
+                {!catalog.showInGallery && (
+                  <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
+                    No visible en la página
                   </span>
                 )}
               </div>

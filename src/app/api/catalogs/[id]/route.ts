@@ -23,6 +23,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl || null : undefined,
       branch: typeof body.branch === "string" ? body.branch.trim() || null : undefined,
       category: typeof body.category === "string" ? body.category.trim() || null : undefined,
+      showInGallery: typeof body.showInGallery === "boolean" ? body.showInGallery : undefined,
       published: typeof body.published === "boolean" ? body.published : undefined,
       order: typeof body.order === "number" ? body.order : undefined,
     },

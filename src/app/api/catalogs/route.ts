@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       imageUrl: typeof body?.imageUrl === "string" && body.imageUrl ? body.imageUrl : null,
       branch: typeof body?.branch === "string" && body.branch.trim() ? body.branch.trim() : null,
       category: typeof body?.category === "string" && body.category.trim() ? body.category.trim() : null,
+      showInGallery: body?.showInGallery !== false,
       published: body?.published !== false,
       order: typeof body?.order === "number" ? body.order : 0,
     },
