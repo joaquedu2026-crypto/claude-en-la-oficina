@@ -4,6 +4,7 @@ import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 import AdBranchLinkButton from "@/components/AdBranchLinkButton";
 import ShareButton from "@/components/ShareButton";
+import WhatsappFloatingButton from "@/components/WhatsappFloatingButton";
 
 export const dynamic = "force-dynamic";
 
@@ -29,27 +30,9 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {whatsappSocials.length > 0 && (
-        <div className="fixed right-2 sm:right-4 bottom-4 z-30 flex flex-col-reverse gap-2">
-          {whatsappSocials.map((social) => (
-            <a
-              key={social.id}
-              href={social.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={social.label ? `WhatsApp · ${social.label}` : "WhatsApp"}
-              className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white border border-border-soft shadow-sm hover:shadow-md hover:-translate-x-0.5 transition pl-1.5 pr-2.5 py-1.5 sm:pl-2 sm:pr-4 sm:py-2"
-            >
-              <SocialIcon platform="whatsapp" className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0" />
-              {social.label && (
-                <span className="text-[11px] sm:text-sm font-medium text-brand leading-none whitespace-nowrap">
-                  {social.label}
-                </span>
-              )}
-            </a>
-          ))}
-        </div>
-      )}
+      <WhatsappFloatingButton
+        options={whatsappSocials.map((s, i) => ({ branch: s.label || `Contacto ${i + 1}`, url: s.url }))}
+      />
 
       <header className="border-b border-border-soft">
         <Image src="/logo.webp" alt="Wanna Cosmetics" width={560} height={197} priority className="w-full h-auto" sizes="100vw" />
