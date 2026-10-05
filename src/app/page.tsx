@@ -2,6 +2,7 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
+import AdBranchLinkButton from "@/components/AdBranchLinkButton";
 
 export const dynamic = "force-dynamic";
 
@@ -174,15 +175,23 @@ export default async function Home() {
                       <p className="text-muted mt-2 flex-1 whitespace-pre-wrap font-light text-sm leading-relaxed">
                         {ad.description}
                       </p>
-                      {ad.link && (
-                        <a
-                          href={ad.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
-                        >
-                          Ver más →
-                        </a>
+                      {ad.branchCategory ? (
+                        <AdBranchLinkButton
+                          options={catalogs
+                            .filter((c) => c.branch && c.category === ad.branchCategory)
+                            .map((c) => ({ branch: c.branch as string, url: c.url }))}
+                        />
+                      ) : (
+                        ad.link && (
+                          <a
+                            href={ad.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
+                          >
+                            Ver más →
+                          </a>
+                        )
                       )}
                       {ad.videoUrl && !embedUrl && !uploadedVideo && (
                         <a

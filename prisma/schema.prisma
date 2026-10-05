@@ -8,19 +8,20 @@ datasource db {
 }
 
 model Ad {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  imageUrl    String?
-  videoUrl    String?
-  link        String?
-  mediaWidth  Int?
-  mediaHeight Int?
-  fullWidth   Boolean  @default(false)
-  published   Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  description    String
+  imageUrl       String?
+  videoUrl       String?
+  link           String?
+  branchCategory String?
+  mediaWidth     Int?
+  mediaHeight    Int?
+  fullWidth      Boolean  @default(false)
+  published      Boolean  @default(true)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Catalog {

@@ -11,6 +11,7 @@ type Ad = {
   imageUrl: string | null;
   videoUrl: string | null;
   link: string | null;
+  branchCategory: string | null;
   mediaWidth: number | null;
   mediaHeight: number | null;
   fullWidth: boolean;
@@ -29,6 +30,7 @@ type Catalog = {
 const NO_LINK = "none";
 const CATALOG_LINK = "catalog";
 const CUSTOM_LINK = "custom";
+const ASK_BRANCH = "ask_branch";
 const GENERAL_GROUP = "__general__";
 
 const emptyForm = {
@@ -37,6 +39,7 @@ const emptyForm = {
   imageUrl: "",
   videoUrl: "",
   link: "",
+  branchCategory: "",
   mediaWidth: "",
   mediaHeight: "",
   fullWidth: false,
@@ -55,12 +58,17 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
   const branches = Array.from(new Set(catalogs.filter((c) => c.branch).map((c) => c.branch as string)));
   const hasBranches = branches.length > 0;
   const hasGeneralCatalogs = catalogs.some((c) => !c.branch);
+  const branchCategories = Array.from(
+    new Set(catalogs.filter((c) => c.branch && c.category).map((c) => c.category as string)),
+  );
 
   function catalogsForBranchGroup(group: string): Catalog[] {
     return group === GENERAL_GROUP ? catalogs.filter((c) => !c.branch) : catalogs.filter((c) => c.branch === group);
   }
 
-  function resolveLinkState(link: string) {
+  function resolveLinkState(ad: Ad) {
+    if (ad.branchCategory) return { linkType: ASK_BRANCH, catalogId: "", branchGroup: "" };
+    const link = ad.link ?? "";
     if (!link) return { linkType: NO_LINK, catalogId: "", branchGroup: "" };
     const match = catalogs.find((c) => c.url === link);
     if (!match) return { linkType: CUSTOM_LINK, catalogId: "", branchGroup: "" };
@@ -77,6 +85,9 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
     setSelectedCatalogId("");
     if (value !== CUSTOM_LINK) {
       setForm((f) => ({ ...f, link: "" }));
+    }
+    if (value !== ASK_BRANCH) {
+      setForm((f) => ({ ...f, branchCategory: "" }));
     }
   }
 
@@ -101,12 +112,13 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
       imageUrl: ad.imageUrl ?? "",
       videoUrl: ad.videoUrl ?? "",
       link,
+      branchCategory: ad.branchCategory ?? "",
       mediaWidth: ad.mediaWidth != null ? String(ad.mediaWidth) : "",
       mediaHeight: ad.mediaHeight != null ? String(ad.mediaHeight) : "",
       fullWidth: ad.fullWidth,
       order: String(ad.order),
     });
-    const state = resolveLinkState(link);
+    const state = resolveLinkState(ad);
     setLinkType(state.linkType);
     setSelectedCatalogId(state.catalogId);
     setSelectedBranchGroup(state.branchGroup);
@@ -165,6 +177,7 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
       imageUrl: form.imageUrl,
       videoUrl: form.videoUrl,
       link: form.link,
+      branchCategory: form.branchCategory || null,
       mediaWidth: form.mediaWidth.trim() ? Number(form.mediaWidth) : null,
       mediaHeight: form.mediaHeight.trim() ? Number(form.mediaHeight) : null,
       fullWidth: form.fullWidth,
@@ -296,8 +309,32 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
           >
             <option value={NO_LINK}>Sin enlace</option>
             <option value={CATALOG_LINK}>Un catálogo</option>
+            {branchCategories.length > 0 && (
+              <option value={ASK_BRANCH}>Preguntarle la sucursal al cliente</option>
+            )}
             <option value={CUSTOM_LINK}>Otro enlace (escribir manualmente)</option>
           </select>
+
+          {linkType === ASK_BRANCH && (
+            <div className="mt-2">
+              <select
+                value={form.branchCategory}
+                onChange={(e) => setForm((f) => ({ ...f, branchCategory: e.target.value }))}
+                className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+              >
+                <option value="">Elegí la categoría de este anuncio…</option>
+                {branchCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted mt-1">
+                Al tocar &quot;Ver más&quot;, el visitante va a elegir su sucursal y lo vamos a mandar al catálogo de{" "}
+                {form.branchCategory || "esta categoría"} de esa sucursal.
+              </p>
+            </div>
+          )}
 
           {linkType === CATALOG_LINK && (
             <div className="mt-2 space-y-2">
@@ -451,6 +488,11 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
                 {ad.fullWidth && (
                   <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
                     Ancho completo
+                  </span>
+                )}
+                {ad.branchCategory && (
+                  <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
+                    Pregunta sucursal: {ad.branchCategory}
                   </span>
                 )}
               </div>

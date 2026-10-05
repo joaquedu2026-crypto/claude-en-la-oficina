@@ -22,6 +22,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       imageUrl: typeof body.imageUrl === "string" ? body.imageUrl || null : undefined,
       videoUrl: typeof body.videoUrl === "string" ? (body.videoUrl ? normalizeUrl(body.videoUrl) : null) : undefined,
       link: typeof body.link === "string" ? (body.link ? normalizeUrl(body.link) : null) : undefined,
+      branchCategory: typeof body.branchCategory === "string" ? body.branchCategory || null : undefined,
       mediaWidth: body.mediaWidth === null || typeof body.mediaWidth === "number" ? body.mediaWidth : undefined,
       mediaHeight: body.mediaHeight === null || typeof body.mediaHeight === "number" ? body.mediaHeight : undefined,
       fullWidth: typeof body.fullWidth === "boolean" ? body.fullWidth : undefined,

@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       imageUrl: typeof body?.imageUrl === "string" && body.imageUrl ? body.imageUrl : null,
       videoUrl: typeof body?.videoUrl === "string" && body.videoUrl ? normalizeUrl(body.videoUrl) : null,
       link: typeof body?.link === "string" && body.link ? normalizeUrl(body.link) : null,
+      branchCategory: typeof body?.branchCategory === "string" && body.branchCategory ? body.branchCategory : null,
       mediaWidth: typeof body?.mediaWidth === "number" ? body.mediaWidth : null,
       mediaHeight: typeof body?.mediaHeight === "number" ? body.mediaHeight : null,
       fullWidth: body?.fullWidth === true,
