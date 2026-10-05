@@ -38,11 +38,11 @@ export default async function Home() {
               target="_blank"
               rel="noopener noreferrer"
               title={social.label ? `WhatsApp · ${social.label}` : "WhatsApp"}
-              className="flex items-center gap-1.5 rounded-full bg-white border border-border-soft shadow-sm hover:shadow-md hover:-translate-x-0.5 transition pl-1.5 pr-2.5 py-1.5"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white border border-border-soft shadow-sm hover:shadow-md hover:-translate-x-0.5 transition pl-1.5 pr-2.5 py-1.5 sm:pl-2 sm:pr-4 sm:py-2"
             >
-              <SocialIcon platform="whatsapp" className="h-6 w-6 flex-shrink-0" />
+              <SocialIcon platform="whatsapp" className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0" />
               {social.label && (
-                <span className="text-[11px] font-medium text-brand leading-none whitespace-nowrap">
+                <span className="text-[11px] sm:text-sm font-medium text-brand leading-none whitespace-nowrap">
                   {social.label}
                 </span>
               )}
