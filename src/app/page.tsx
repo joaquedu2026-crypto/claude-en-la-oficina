@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 import AdBranchLinkButton from "@/components/AdBranchLinkButton";
+import ShareButton from "@/components/ShareButton";
 
 export const dynamic = "force-dynamic";
 
@@ -51,11 +52,12 @@ export default async function Home() {
       )}
 
       <header className="border-b border-border-soft">
-        <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col items-center text-center">
-          <Image src="/logo.webp" alt="Wanna Cosmetics" width={560} height={197} priority className="h-auto w-[90%] max-w-[380px] sm:max-w-[460px] md:max-w-[560px]" />
-          <p className="mt-4 text-muted text-sm tracking-wide font-light">
+        <Image src="/logo.webp" alt="Wanna Cosmetics" width={560} height={197} priority className="w-full h-auto" sizes="100vw" />
+        <div className="max-w-5xl mx-auto px-6 pb-10 pt-6 flex flex-col items-center text-center">
+          <p className="text-muted text-sm tracking-wide font-light">
             Novedades, promociones y catálogos
           </p>
+          <ShareButton />
           {otherSocials.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               {otherSocials.map((social) => {
