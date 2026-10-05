@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
 
-const MAX_ATTEMPTS = 5;
-const DELAY_MS = 6000;
+const MAX_ATTEMPTS = 8;
+const DELAY_MS = 10000;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
