@@ -23,18 +23,42 @@ export default async function Home() {
   ]);
 
   const galleryCatalogs = catalogs.filter((c) => c.showInGallery);
+  const whatsappSocials = socials.filter((s) => s.platform === "whatsapp");
+  const otherSocials = socials.filter((s) => s.platform !== "whatsapp");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {whatsappSocials.length > 0 && (
+        <div className="fixed right-2 sm:right-4 bottom-4 z-30 flex flex-col-reverse gap-2">
+          {whatsappSocials.map((social) => (
+            <a
+              key={social.id}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={social.label ? `WhatsApp · ${social.label}` : "WhatsApp"}
+              className="flex items-center gap-1.5 rounded-full bg-white border border-border-soft shadow-sm hover:shadow-md hover:-translate-x-0.5 transition pl-1.5 pr-2.5 py-1.5"
+            >
+              <SocialIcon platform="whatsapp" className="h-6 w-6 flex-shrink-0" />
+              {social.label && (
+                <span className="text-[11px] font-medium text-brand leading-none whitespace-nowrap">
+                  {social.label}
+                </span>
+              )}
+            </a>
+          ))}
+        </div>
+      )}
+
       <header className="border-b border-border-soft">
         <div className="max-w-5xl mx-auto px-6 py-10 flex flex-col items-center text-center">
           <Image src="/logo.webp" alt="Wanna Cosmetics" width={560} height={197} priority className="h-auto w-[90%] max-w-[380px] sm:max-w-[460px] md:max-w-[560px]" />
           <p className="mt-4 text-muted text-sm tracking-wide font-light">
             Novedades, promociones y catálogos
           </p>
-          {socials.length > 0 && (
+          {otherSocials.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {socials.map((social) => {
+              {otherSocials.map((social) => {
                 const icon = social.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={social.imageUrl} alt="" className="h-9 w-9 rounded-full object-cover" />
@@ -83,14 +107,14 @@ export default async function Home() {
             <h2 className="text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10">
               Catálogos
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
               {galleryCatalogs.map((catalog) => (
                 <a
                   key={catalog.id}
                   href={catalog.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group bg-white border border-border-soft hover:border-brand-light rounded-2xl overflow-hidden flex flex-col transition shadow-sm hover:shadow-md"
+                  className="group bg-white border border-border-soft hover:border-brand-light rounded-xl overflow-hidden flex flex-col transition shadow-sm hover:shadow-md"
                 >
                   {catalog.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -100,16 +124,16 @@ export default async function Home() {
                       className="w-full aspect-square object-cover"
                     />
                   ) : (
-                    <div className="w-full aspect-square bg-brand-tint flex items-center justify-center text-brand text-3xl font-medium">
+                    <div className="w-full aspect-square bg-brand-tint flex items-center justify-center text-brand text-xl font-medium">
                       {catalog.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <div className="bg-white p-3 text-center">
-                    <p className="font-semibold text-base text-foreground group-hover:text-brand transition">
+                  <div className="bg-white p-2 text-center">
+                    <p className="font-semibold text-xs text-foreground group-hover:text-brand transition">
                       {catalog.name}
                     </p>
                     {catalog.description && (
-                      <p className="text-xs text-muted mt-1 font-light line-clamp-2">
+                      <p className="text-[11px] text-muted mt-0.5 font-light line-clamp-2">
                         {catalog.description}
                       </p>
                     )}
