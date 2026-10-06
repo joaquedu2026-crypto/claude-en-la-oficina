@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 
@@ -11,6 +11,10 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Wanna Cosmetics",
   description: "Anuncios, publicaciones y accesos directos a catálogos de Wanna Cosmetics",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#5a1d5f",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
