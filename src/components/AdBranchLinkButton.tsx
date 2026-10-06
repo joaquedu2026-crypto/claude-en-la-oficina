@@ -7,7 +7,17 @@ type BranchOption = {
   url: string;
 };
 
-export default function AdBranchLinkButton({ options }: { options: BranchOption[] }) {
+export default function AdBranchLinkButton({
+  options,
+  children,
+  wrapperClassName = "relative mt-5",
+  buttonClassName = "inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition",
+}: {
+  options: BranchOption[];
+  children?: React.ReactNode;
+  wrapperClassName?: string;
+  buttonClassName?: string;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -25,13 +35,9 @@ export default function AdBranchLinkButton({ options }: { options: BranchOption[
   if (options.length === 0) return null;
 
   return (
-    <div className="relative mt-5" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
-      >
-        Ver más →
+    <div className={wrapperClassName} ref={ref}>
+      <button type="button" onClick={() => setOpen((v) => !v)} className={buttonClassName}>
+        {children ?? "Ver más →"}
       </button>
       {open && (
         <div className="absolute z-10 mt-2 bg-white border border-border-soft rounded-xl shadow-lg overflow-hidden min-w-[180px]">

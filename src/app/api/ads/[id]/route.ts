@@ -29,6 +29,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         mediaWidth: body.mediaWidth === null || typeof body.mediaWidth === "number" ? body.mediaWidth : undefined,
         mediaHeight: body.mediaHeight === null || typeof body.mediaHeight === "number" ? body.mediaHeight : undefined,
         fullWidth: typeof body.fullWidth === "boolean" ? body.fullWidth : undefined,
+        shape: typeof body.shape === "string" ? (body.shape === "circle" ? "circle" : "card") : undefined,
         published: typeof body.published === "boolean" ? body.published : undefined,
         order: typeof body.order === "number" ? body.order : undefined,
       },

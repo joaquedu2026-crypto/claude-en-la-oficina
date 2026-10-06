@@ -151,78 +151,124 @@ export default async function Home() {
                     }
                   : undefined;
 
-                return (
-                  <article
-                    key={ad.id}
-                    className={`bg-white border border-border-soft rounded-2xl flex flex-col shadow-sm hover:shadow-md transition ${ad.fullWidth ? "sm:col-span-2" : ""}`}
-                  >
-                    {uploadedVideo ? (
-                      <div
-                        className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
-                        style={mediaStyle}
-                      >
-                        <video
-                          src={uploadedVideo}
-                          controls
-                          className={hasCustomSize ? "w-full h-full" : "w-full h-full object-cover"}
-                        />
-                      </div>
-                    ) : embedUrl ? (
-                      <div
-                        className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
-                        style={mediaStyle}
-                      >
-                        <iframe
-                          src={embedUrl}
-                          title={ad.title}
-                          className="w-full h-full"
-                          allowFullScreen
-                        />
-                      </div>
-                    ) : ad.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={ad.imageUrl}
-                        alt={ad.title}
-                        className={`rounded-t-2xl ${hasCustomSize ? "mx-auto" : "w-full aspect-video object-cover"}`}
-                        style={mediaStyle}
-                      />
-                    ) : null}
+                const hasVideo = Boolean(uploadedVideo || embedUrl);
+                const isCircle = ad.shape === "circle";
+                // Un video siempre necesita sus propios controles interactivos, así que
+                // nunca convertimos la tarjeta entera en un único botón cuando hay video.
+                const wholeCardClickable = !hasVideo && Boolean(ad.link || ad.branchCategory);
+                const branchOptions = ad.branchCategory
+                  ? catalogs
+                      .filter((c) => c.branch && c.category === ad.branchCategory)
+                      .map((c) => ({ branch: c.branch as string, url: c.url }))
+                  : [];
 
-                    <div className="p-6 flex-1 flex flex-col">
-                      <h3 className="font-medium text-lg">{ad.title}</h3>
-                      <p className="text-muted mt-2 flex-1 whitespace-pre-wrap font-light text-sm leading-relaxed">
-                        {ad.description}
-                      </p>
-                      {ad.branchCategory ? (
-                        <AdBranchLinkButton
-                          options={catalogs
-                            .filter((c) => c.branch && c.category === ad.branchCategory)
-                            .map((c) => ({ branch: c.branch as string, url: c.url }))}
-                        />
-                      ) : (
-                        ad.link && (
-                          <a
-                            href={ad.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
-                          >
-                            Ver más →
-                          </a>
-                        )
-                      )}
-                      {ad.videoUrl && !embedUrl && !uploadedVideo && (
+                const mediaBlock = uploadedVideo ? (
+                  <div
+                    className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
+                    style={mediaStyle}
+                  >
+                    <video
+                      src={uploadedVideo}
+                      controls
+                      className={hasCustomSize ? "w-full h-full" : "w-full h-full object-cover"}
+                    />
+                  </div>
+                ) : embedUrl ? (
+                  <div
+                    className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
+                    style={mediaStyle}
+                  >
+                    <iframe src={embedUrl} title={ad.title} className="w-full h-full" allowFullScreen />
+                  </div>
+                ) : isCircle ? (
+                  ad.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={ad.imageUrl}
+                      alt={ad.title}
+                      className="h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover mx-auto mt-6"
+                    />
+                  ) : (
+                    <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-full bg-brand-tint flex items-center justify-center text-brand text-3xl font-medium mx-auto mt-6">
+                      {ad.title.charAt(0).toUpperCase()}
+                    </div>
+                  )
+                ) : ad.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={ad.imageUrl}
+                    alt={ad.title}
+                    className={`rounded-t-2xl ${hasCustomSize ? "mx-auto" : "w-full aspect-video object-cover"}`}
+                    style={mediaStyle}
+                  />
+                ) : null;
+
+                const cardBody = (
+                  <div className={`p-6 flex-1 flex flex-col ${isCircle ? "items-center text-center" : ""}`}>
+                    <h3 className="font-medium text-lg">{ad.title}</h3>
+                    <p className="text-muted mt-2 flex-1 whitespace-pre-wrap font-light text-sm leading-relaxed">
+                      {ad.description}
+                    </p>
+                    {wholeCardClickable ? (
+                      <span className="mt-5 inline-flex items-center gap-1 text-brand font-medium text-sm">
+                        Ver más →
+                      </span>
+                    ) : ad.branchCategory ? (
+                      <AdBranchLinkButton options={branchOptions} />
+                    ) : (
+                      ad.link && (
                         <a
-                          href={ad.videoUrl}
+                          href={ad.link}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
                         >
-                          Ver video →
+                          Ver más →
                         </a>
-                      )}
-                    </div>
+                      )
+                    )}
+                    {ad.videoUrl && !embedUrl && !uploadedVideo && (
+                      <a
+                        href={ad.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
+                      >
+                        Ver video →
+                      </a>
+                    )}
+                  </div>
+                );
+
+                const cardClasses = `bg-white border border-border-soft rounded-2xl flex flex-col shadow-sm hover:shadow-md transition ${ad.fullWidth ? "sm:col-span-2" : ""}`;
+
+                if (wholeCardClickable && ad.branchCategory) {
+                  return (
+                    <AdBranchLinkButton
+                      key={ad.id}
+                      options={branchOptions}
+                      wrapperClassName={`relative ${cardClasses}`}
+                      buttonClassName="flex-1 flex flex-col text-left w-full appearance-none bg-transparent border-0 p-0 m-0 cursor-pointer"
+                    >
+                      {mediaBlock}
+                      {cardBody}
+                    </AdBranchLinkButton>
+                  );
+                }
+
+                if (wholeCardClickable && ad.link) {
+                  return (
+                    <a key={ad.id} href={ad.link} target="_blank" rel="noopener noreferrer" className={cardClasses}>
+                      {mediaBlock}
+                      {cardBody}
+                    </a>
+                  );
+                }
+
+                return (
+                  <article key={ad.id} className={cardClasses}>
+                    {mediaBlock}
+                    {cardBody}
                   </article>
                 );
               })}

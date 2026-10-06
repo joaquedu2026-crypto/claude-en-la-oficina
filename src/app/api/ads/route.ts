@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         mediaWidth: typeof body?.mediaWidth === "number" ? body.mediaWidth : null,
         mediaHeight: typeof body?.mediaHeight === "number" ? body.mediaHeight : null,
         fullWidth: body?.fullWidth === true,
+        shape: body?.shape === "circle" ? "circle" : "card",
         published: body?.published !== false,
         order: typeof body?.order === "number" ? body.order : 0,
       },

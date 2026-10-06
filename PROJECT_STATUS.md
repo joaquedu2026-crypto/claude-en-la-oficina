@@ -25,7 +25,7 @@ Sitio web de la marca de cosméticos "Wanna Cosmetics" (sucursales en Rio Grande
 
 ## Modelo de datos (`prisma/schema.prisma`)
 
-- `Ad`: título, descripción, imagen o video (upload o URL de YouTube), link opcional, `branchCategory` (para el selector de sucursal), tamaño custom de media, `fullWidth`, orden.
+- `Ad`: título, descripción, imagen o video (upload o URL de YouTube), link opcional, `branchCategory` (para el selector de sucursal), tamaño custom de media, `fullWidth`, `shape` (`"card"` o `"circle"`), orden.
 - `Catalog`: nombre, descripción, url, imagen, `branch`/`category` (para asociarlo al selector de sucursal de un anuncio), `showInGallery` (si aparece como tarjeta visible en la página o es solo un link interno).
 - `SocialLink`: `platform` (`whatsapp`, `instagram`, `facebook`, `tiktok`, `youtube`, `x`, `other`), url, label opcional (ej. nombre de sucursal para whatsapp), imagen custom opcional.
 - `SiteSettings`: fila única (`id: "main"`) con `logoUrl` y `backgroundImageUrl` opcionales, editable desde `/admin/settings`.
@@ -37,6 +37,7 @@ Sitio web de la marca de cosméticos "Wanna Cosmetics" (sucursales en Rio Grande
 - Columna flotante única de contacto (`src/components/WhatsappFloatingButton.tsx` + lógica en `src/app/page.tsx`): WhatsApp arriba (con selector de sucursal si hay más de un número cargado), después Instagram, después Facebook — todos del mismo tamaño, responsive (más chico en celular).
 - Botón "Compartir" (`src/components/ShareButton.tsx`): usa `navigator.share` en celular (incluye WhatsApp en el menú nativo) y copia el link al portapapeles en desktop.
 - Logo e imagen de fondo configurables desde `/admin/settings` (`SiteSettings`), con fallback a `/public/hero-logo.webp` si no se configura nada.
+- Anuncios como botones (`Ad.shape`): con imagen y sin video, toda la tarjeta del anuncio es clickeable (como los catálogos) — ya sea un `<a>` directo (si tiene `link`) o el trigger del popover de sucursal (si tiene `branchCategory`, generalizado en `AdBranchLinkButton` vía `children`/`wrapperClassName`/`buttonClassName`). `shape: "circle"` muestra la imagen como círculo (o un círculo con la inicial si no hay imagen) con el texto centrado debajo. Los anuncios con video SIEMPRE se renderizan en el layout clásico (video + link "Ver más" aparte), nunca como tarjeta-botón entera, para no romper los controles del video.
 
 ## ⚠️ Problema conocido: Supabase tiene cortes de conexión intermitentes
 

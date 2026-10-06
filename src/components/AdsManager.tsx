@@ -15,6 +15,7 @@ type Ad = {
   mediaWidth: number | null;
   mediaHeight: number | null;
   fullWidth: boolean;
+  shape: string;
   published: boolean;
   order: number;
 };
@@ -43,6 +44,7 @@ const emptyForm = {
   mediaWidth: "",
   mediaHeight: "",
   fullWidth: false,
+  shape: "card",
   order: "0",
 };
 
@@ -116,6 +118,7 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
       mediaWidth: ad.mediaWidth != null ? String(ad.mediaWidth) : "",
       mediaHeight: ad.mediaHeight != null ? String(ad.mediaHeight) : "",
       fullWidth: ad.fullWidth,
+      shape: ad.shape,
       order: String(ad.order),
     });
     const state = resolveLinkState(ad);
@@ -181,6 +184,7 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
       mediaWidth: form.mediaWidth.trim() ? Number(form.mediaWidth) : null,
       mediaHeight: form.mediaHeight.trim() ? Number(form.mediaHeight) : null,
       fullWidth: form.fullWidth,
+      shape: form.shape,
       order: form.order.trim() ? Number(form.order) : 0,
     };
 
@@ -428,6 +432,22 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
           Si dejás estos campos vacíos, la imagen/video se adapta automáticamente. En celulares nunca se va a pasar del ancho de la pantalla.
         </p>
 
+        <div>
+          <label className="block text-sm text-foreground mb-1">Forma</label>
+          <select
+            value={form.shape}
+            onChange={(e) => setForm((f) => ({ ...f, shape: e.target.value }))}
+            className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+          >
+            <option value="card">Tarjeta (imagen rectangular)</option>
+            <option value="circle">Círculo</option>
+          </select>
+          <p className="text-xs text-muted mt-1">
+            Con imagen (sin video), toda la tarjeta funciona como botón — igual que los catálogos. No aplica a
+            anuncios con video: esos siempre se muestran como tarjeta.
+          </p>
+        </div>
+
         <label className="flex items-center gap-2 text-sm text-foreground">
           <input
             type="checkbox"
@@ -499,6 +519,9 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
                   <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
                     Pregunta sucursal: {ad.branchCategory}
                   </span>
+                )}
+                {ad.shape === "circle" && (
+                  <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">Círculo</span>
                 )}
               </div>
               <p className="text-sm text-muted line-clamp-2">{ad.description}</p>
