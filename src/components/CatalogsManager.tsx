@@ -9,9 +9,6 @@ type Catalog = {
   description: string | null;
   url: string;
   imageUrl: string | null;
-  branch: string | null;
-  category: string | null;
-  showInGallery: boolean;
   published: boolean;
   order: number;
 };
@@ -21,9 +18,6 @@ const emptyForm = {
   description: "",
   url: "",
   imageUrl: "",
-  branch: "",
-  category: "",
-  showInGallery: true,
 };
 
 export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: Catalog[] }) {
@@ -41,9 +35,6 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
       description: catalog.description ?? "",
       url: catalog.url,
       imageUrl: catalog.imageUrl ?? "",
-      branch: catalog.branch ?? "",
-      category: catalog.category ?? "",
-      showInGallery: catalog.showInGallery,
     });
   }
 
@@ -131,8 +122,13 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
         className="bg-white border border-border-soft rounded-2xl p-6 space-y-4"
       >
         <h2 className="text-lg font-semibold">
-          {editingId ? "Editar catálogo" : "Nuevo acceso a catálogo"}
+          {editingId ? "Editar catálogo" : "Nuevo catálogo"}
         </h2>
+        <p className="text-xs text-muted -mt-2">
+          Son los catálogos reales que se muestran como tarjetas en la sección &quot;Catálogos&quot; de la página.
+          Para links de ubicación o filtrados por sucursal usados en los anuncios, usá &quot;Accesos por
+          sucursal&quot;.
+        </p>
 
         <div>
           <label className="block text-sm text-foreground mb-1">Nombre</label>
@@ -152,43 +148,6 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
             className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
           />
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm text-foreground mb-1">Sucursal (opcional)</label>
-            <input
-              value={form.branch}
-              onChange={(e) => setForm((f) => ({ ...f, branch: e.target.value }))}
-              placeholder="ej: Rio Gallegos"
-              className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-foreground mb-1">Categoría (opcional)</label>
-            <input
-              value={form.category}
-              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              placeholder="ej: Maquillaje"
-              className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
-            />
-          </div>
-        </div>
-        <p className="text-xs text-muted -mt-2">
-          Si cargás sucursal y categoría, vas a poder elegir este catálogo puntual desde el selector de enlace de los anuncios (sucursal → categoría).
-        </p>
-
-        <label className="flex items-center gap-2 text-sm text-foreground">
-          <input
-            type="checkbox"
-            checked={form.showInGallery}
-            onChange={(e) => setForm((f) => ({ ...f, showInGallery: e.target.checked }))}
-            className="rounded border-border-soft"
-          />
-          Mostrar como tarjeta en la sección de Catálogos del sitio
-        </label>
-        <p className="text-xs text-muted -mt-2">
-          Desmarcalo si este catálogo es solo para usar en el selector de sucursal de los anuncios, y no querés que aparezca como una tarjeta más en la página.
-        </p>
 
         <div>
           <label className="block text-sm text-foreground mb-1">Descripción (opcional)</label>
@@ -254,21 +213,6 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
                 {!catalog.published && (
                   <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
                     Oculto
-                  </span>
-                )}
-                {catalog.branch && (
-                  <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
-                    {catalog.branch}
-                  </span>
-                )}
-                {catalog.category && (
-                  <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
-                    {catalog.category}
-                  </span>
-                )}
-                {!catalog.showInGallery && (
-                  <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">
-                    No visible en la página
                   </span>
                 )}
               </div>

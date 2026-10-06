@@ -15,21 +15,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  const catalog = await withRetry(() =>
-    prisma.catalog.update({
+  const branchLink = await withRetry(() =>
+    prisma.branchLink.update({
       where: { id },
       data: {
-        name: typeof body.name === "string" ? body.name.trim() : undefined,
+        branch: typeof body.branch === "string" ? body.branch.trim() : undefined,
+        category: typeof body.category === "string" ? body.category.trim() : undefined,
         url: typeof body.url === "string" ? normalizeUrl(body.url.trim()) : undefined,
-        description: typeof body.description === "string" ? body.description || null : undefined,
-        imageUrl: typeof body.imageUrl === "string" ? body.imageUrl || null : undefined,
-        published: typeof body.published === "boolean" ? body.published : undefined,
-        order: typeof body.order === "number" ? body.order : undefined,
       },
     })
   );
 
-  return NextResponse.json(catalog);
+  return NextResponse.json(branchLink);
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -38,6 +35,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   }
 
   const { id } = await params;
-  await withRetry(() => prisma.catalog.delete({ where: { id } }));
+  await withRetry(() => prisma.branchLink.delete({ where: { id } }));
   return NextResponse.json({ ok: true });
 }

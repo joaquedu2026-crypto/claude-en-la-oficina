@@ -26,18 +26,29 @@ model Ad {
 }
 
 model Catalog {
-  id            String   @id @default(cuid())
-  name          String
-  description   String?
-  url           String
-  imageUrl      String?
-  branch        String?
-  category      String?
-  showInGallery Boolean  @default(true)
-  published     Boolean  @default(true)
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  url         String
+  imageUrl    String?
+  published   Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Enlaces por sucursal + categoría usados para que los anuncios y el selector
+// global de sucursal sepan a dónde mandar al visitante. No son catálogos
+// reales (no se muestran como tarjetas en la página): son solo links, por
+// ejemplo la ubicación de Google Maps de cada sucursal, o el catálogo
+// filtrado por categoría (maquillaje, peluquería, etc.) de cada sucursal.
+model BranchLink {
+  id        String   @id @default(cuid())
+  branch    String
+  category  String
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SocialLink {

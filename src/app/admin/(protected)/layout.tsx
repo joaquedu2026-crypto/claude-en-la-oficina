@@ -26,6 +26,9 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
             <Link href="/admin/catalogs" className="hover:text-brand font-medium whitespace-nowrap">
               Catálogos
             </Link>
+            <Link href="/admin/branch-links" className="hover:text-brand font-medium whitespace-nowrap">
+              Accesos por sucursal
+            </Link>
             <Link href="/admin/socials" className="hover:text-brand font-medium whitespace-nowrap">
               Redes y contacto
             </Link>

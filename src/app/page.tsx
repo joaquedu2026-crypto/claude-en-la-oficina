@@ -17,7 +17,7 @@ const SOCIAL_PRIORITY: Record<string, number> = { instagram: 0, facebook: 1 };
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [ads, catalogs, socials, settings] = await withRetry(() =>
+  const [ads, catalogs, branchLinks, socials, settings] = await withRetry(() =>
     Promise.all([
       prisma.ad.findMany({
         where: { published: true },
@@ -27,6 +27,7 @@ export default async function Home() {
         where: { published: true },
         orderBy: [{ order: "asc" }, { createdAt: "desc" }],
       }),
+      prisma.branchLink.findMany(),
       prisma.socialLink.findMany({
         where: { published: true },
         orderBy: [{ order: "asc" }, { createdAt: "desc" }],
@@ -35,7 +36,6 @@ export default async function Home() {
     ])
   );
 
-  const galleryCatalogs = catalogs.filter((c) => c.showInGallery);
   const enrichedAds = ads.map((ad) => {
     const embedUrl = ad.videoUrl && !isVideoFile(ad.videoUrl) ? getYoutubeEmbedUrl(ad.videoUrl) : null;
     const uploadedVideo = ad.videoUrl && isVideoFile(ad.videoUrl) ? ad.videoUrl : null;
@@ -53,7 +53,7 @@ export default async function Home() {
   const backgroundImageUrl = settings?.backgroundImageUrl || null;
   const branches = Array.from(
     new Set([
-      ...catalogs.filter((c) => c.branch).map((c) => c.branch as string),
+      ...branchLinks.map((b) => b.branch),
       ...whatsappSocials.filter((s) => s.label).map((s) => s.label as string),
     ])
   );
@@ -106,13 +106,13 @@ export default async function Home() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-16 space-y-20">
-        {galleryCatalogs.length > 0 && (
+        {catalogs.length > 0 && (
           <section>
             <h2 className="mx-auto w-fit text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
               Catálogos
             </h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-              {galleryCatalogs.map((catalog) => (
+              {catalogs.map((catalog) => (
                 <a
                   key={catalog.id}
                   href={catalog.url}
@@ -162,9 +162,9 @@ export default async function Home() {
                 <div className="flex flex-wrap justify-center gap-x-5 gap-y-6 mb-12">
                   {circleAds.map(({ ad }) => {
                     const branchOptions = ad.branchCategory
-                      ? catalogs
-                          .filter((c) => c.branch && c.category === ad.branchCategory)
-                          .map((c) => ({ branch: c.branch as string, url: c.url }))
+                      ? branchLinks
+                          .filter((b) => b.category === ad.branchCategory)
+                          .map((b) => ({ branch: b.branch, url: b.url }))
                       : [];
 
                     const circleContent = (
@@ -242,9 +242,9 @@ export default async function Home() {
                     // nunca convertimos la tarjeta entera en un único botón cuando hay video.
                     const wholeCardClickable = !hasVideo && Boolean(ad.link || ad.branchCategory);
                     const branchOptions = ad.branchCategory
-                      ? catalogs
-                          .filter((c) => c.branch && c.category === ad.branchCategory)
-                          .map((c) => ({ branch: c.branch as string, url: c.url }))
+                      ? branchLinks
+                          .filter((b) => b.category === ad.branchCategory)
+                          .map((b) => ({ branch: b.branch, url: b.url }))
                       : [];
 
                     const mediaBlock = uploadedVideo ? (

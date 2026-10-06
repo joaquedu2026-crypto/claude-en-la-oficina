@@ -26,13 +26,14 @@ Sitio web de la marca de cosméticos "Wanna Cosmetics" (sucursales en Rio Grande
 ## Modelo de datos (`prisma/schema.prisma`)
 
 - `Ad`: título, descripción, imagen o video (upload o URL de YouTube), link opcional, `branchCategory` (para el selector de sucursal), tamaño custom de media, `fullWidth`, `shape` (`"card"` o `"circle"`), orden.
-- `Catalog`: nombre, descripción, url, imagen, `branch`/`category` (para asociarlo al selector de sucursal de un anuncio), `showInGallery` (si aparece como tarjeta visible en la página o es solo un link interno).
+- `Catalog`: nombre, descripción, url, imagen. SOLO catálogos reales (tiendas) — siempre se muestran como tarjeta en la sección "Catálogos" de la página, ya no tiene `branch`/`category`/`showInGallery`.
+- `BranchLink`: `branch`, `category`, `url`. Reemplaza el viejo truco de catálogos ocultos (`showInGallery: false`) — son los enlaces que usan los anuncios cuando preguntan la sucursal (`Ad.branchCategory` matchea contra `BranchLink.category`) y las ubicaciones de Google Maps de cada sucursal. Nunca se muestran como tarjetas. Administrados en `/admin/branch-links` (`BranchLinksManager.tsx`).
 - `SocialLink`: `platform` (`whatsapp`, `instagram`, `facebook`, `tiktok`, `youtube`, `x`, `other`), url, label opcional (ej. nombre de sucursal para whatsapp), imagen custom opcional.
 - `SiteSettings`: fila única (`id: "main"`) con `logoUrl` y `backgroundImageUrl` opcionales, editable desde `/admin/settings`.
 
 ## Features clave ya implementadas
 
-- Anuncios con imagen/video/tamaño custom y selector de sucursal: si un anuncio tiene `branchCategory`, en la página pública aparece un botón "Ver más" que despliega un popover preguntando la sucursal, y lleva al catálogo de esa sucursal+categoría (sin agregar una tarjeta extra a la galería pública si el catálogo tiene `showInGallery: false`).
+- Anuncios con imagen/video/tamaño custom y selector de sucursal: si un anuncio tiene `branchCategory`, en la página pública aparece un botón "Ver más" que despliega un popover preguntando la sucursal, y lleva al `BranchLink` de esa sucursal+categoría.
 - Normalización automática de URLs (`src/lib/normalize-url.ts`): completa `https://` si falta, y convierte números de teléfono sueltos en links de `wa.me` para WhatsApp.
 - Columna flotante única de contacto (`src/components/WhatsappFloatingButton.tsx` + lógica en `src/app/page.tsx`): WhatsApp arriba (con selector de sucursal si hay más de un número cargado), después Instagram, después Facebook — todos del mismo tamaño, responsive (más chico en celular).
 - Botón "Compartir" (`src/components/ShareButton.tsx`): usa `navigator.share` en celular (incluye WhatsApp en el menú nativo) y copia el link al portapapeles en desktop.

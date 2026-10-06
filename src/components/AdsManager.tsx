@@ -24,15 +24,19 @@ type Catalog = {
   id: string;
   name: string;
   url: string;
-  branch: string | null;
-  category: string | null;
+};
+
+type BranchLink = {
+  id: string;
+  branch: string;
+  category: string;
+  url: string;
 };
 
 const NO_LINK = "none";
 const CATALOG_LINK = "catalog";
 const CUSTOM_LINK = "custom";
 const ASK_BRANCH = "ask_branch";
-const GENERAL_GROUP = "__general__";
 
 const emptyForm = {
   title: "",
@@ -48,7 +52,15 @@ const emptyForm = {
   order: "0",
 };
 
-export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[]; catalogs: Catalog[] }) {
+export default function AdsManager({
+  initialAds,
+  catalogs,
+  branchLinks,
+}: {
+  initialAds: Ad[];
+  catalogs: Catalog[];
+  branchLinks: BranchLink[];
+}) {
   const [ads, setAds] = useState<Ad[]>(initialAds);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -57,33 +69,22 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const branches = Array.from(new Set(catalogs.filter((c) => c.branch).map((c) => c.branch as string)));
-  const hasBranches = branches.length > 0;
-  const hasGeneralCatalogs = catalogs.some((c) => !c.branch);
-  const branchCategories = Array.from(
-    new Set(catalogs.filter((c) => c.branch && c.category).map((c) => c.category as string)),
-  );
-
-  function catalogsForBranchGroup(group: string): Catalog[] {
-    return group === GENERAL_GROUP ? catalogs.filter((c) => !c.branch) : catalogs.filter((c) => c.branch === group);
-  }
+  const branchCategories = Array.from(new Set(branchLinks.map((b) => b.category)));
 
   function resolveLinkState(ad: Ad) {
-    if (ad.branchCategory) return { linkType: ASK_BRANCH, catalogId: "", branchGroup: "" };
+    if (ad.branchCategory) return { linkType: ASK_BRANCH, catalogId: "" };
     const link = ad.link ?? "";
-    if (!link) return { linkType: NO_LINK, catalogId: "", branchGroup: "" };
+    if (!link) return { linkType: NO_LINK, catalogId: "" };
     const match = catalogs.find((c) => c.url === link);
-    if (!match) return { linkType: CUSTOM_LINK, catalogId: "", branchGroup: "" };
-    return { linkType: CATALOG_LINK, catalogId: match.id, branchGroup: match.branch ?? GENERAL_GROUP };
+    if (!match) return { linkType: CUSTOM_LINK, catalogId: "" };
+    return { linkType: CATALOG_LINK, catalogId: match.id };
   }
 
   const [linkType, setLinkType] = useState(NO_LINK);
-  const [selectedBranchGroup, setSelectedBranchGroup] = useState("");
   const [selectedCatalogId, setSelectedCatalogId] = useState("");
 
   function handleLinkTypeChange(value: string) {
     setLinkType(value);
-    setSelectedBranchGroup("");
     setSelectedCatalogId("");
     if (value !== CUSTOM_LINK) {
       setForm((f) => ({ ...f, link: "" }));
@@ -91,12 +92,6 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
     if (value !== ASK_BRANCH) {
       setForm((f) => ({ ...f, branchCategory: "" }));
     }
-  }
-
-  function handleBranchGroupChange(value: string) {
-    setSelectedBranchGroup(value);
-    setSelectedCatalogId("");
-    setForm((f) => ({ ...f, link: "" }));
   }
 
   function handleCatalogIdChange(value: string) {
@@ -124,14 +119,12 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
     const state = resolveLinkState(ad);
     setLinkType(state.linkType);
     setSelectedCatalogId(state.catalogId);
-    setSelectedBranchGroup(state.branchGroup);
   }
 
   function cancelEdit() {
     setEditingId(null);
     setForm(emptyForm);
     setLinkType(NO_LINK);
-    setSelectedBranchGroup("");
     setSelectedCatalogId("");
   }
 
@@ -323,6 +316,11 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
             )}
             <option value={CUSTOM_LINK}>Otro enlace (escribir manualmente)</option>
           </select>
+          {branchCategories.length === 0 && (
+            <p className="text-xs text-muted mt-1">
+              Para preguntarle la sucursal al cliente, primero cargá categorías en &quot;Accesos por sucursal&quot;.
+            </p>
+          )}
 
           {linkType === ASK_BRANCH && (
             <div className="mt-2">
@@ -346,52 +344,18 @@ export default function AdsManager({ initialAds, catalogs }: { initialAds: Ad[];
           )}
 
           {linkType === CATALOG_LINK && (
-            <div className="mt-2 space-y-2">
-              {hasBranches ? (
-                <>
-                  <select
-                    value={selectedBranchGroup}
-                    onChange={(e) => handleBranchGroupChange(e.target.value)}
-                    className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
-                  >
-                    <option value="">Elegí una sucursal…</option>
-                    {branches.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                    {hasGeneralCatalogs && <option value={GENERAL_GROUP}>Catálogos generales</option>}
-                  </select>
-                  {selectedBranchGroup && (
-                    <select
-                      value={selectedCatalogId}
-                      onChange={(e) => handleCatalogIdChange(e.target.value)}
-                      className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
-                    >
-                      <option value="">Elegí una categoría…</option>
-                      {catalogsForBranchGroup(selectedBranchGroup).map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.category || c.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </>
-              ) : (
-                <select
-                  value={selectedCatalogId}
-                  onChange={(e) => handleCatalogIdChange(e.target.value)}
-                  className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
-                >
-                  <option value="">Elegí un catálogo…</option>
-                  {catalogs.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
+            <select
+              value={selectedCatalogId}
+              onChange={(e) => handleCatalogIdChange(e.target.value)}
+              className="w-full mt-2 rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+            >
+              <option value="">Elegí un catálogo…</option>
+              {catalogs.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           )}
 
           {linkType === CUSTOM_LINK && (
