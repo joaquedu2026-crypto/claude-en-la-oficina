@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 import AdBranchLinkButton from "@/components/AdBranchLinkButton";
+import AdCarousel from "@/components/AdCarousel";
 import ShareButton from "@/components/ShareButton";
 import BranchSelector from "@/components/BranchSelector";
 import WhatsappFloatingButton, {
@@ -45,6 +46,56 @@ export default async function Home() {
   // siempre necesita sus propios controles, así que nunca se muestra compacto.
   const circleAds = enrichedAds.filter((e) => e.ad.shape === "circle" && !e.hasVideo);
   const cardAds = enrichedAds.filter((e) => !(e.ad.shape === "circle" && !e.hasVideo));
+
+  const circleAdItems = circleAds.map(({ ad }) => {
+    const branchOptions = ad.branchCategory
+      ? branchLinks.filter((b) => b.category === ad.branchCategory).map((b) => ({ branch: b.branch, url: b.url }))
+      : [];
+
+    const circleContent = (
+      <>
+        {ad.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={ad.imageUrl}
+            alt={ad.title}
+            className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover mx-auto"
+          />
+        ) : (
+          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-brand-tint flex items-center justify-center text-brand text-xl font-medium mx-auto">
+            {ad.title.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <p className="mt-2 text-xs font-semibold text-center text-foreground">{ad.title}</p>
+        {ad.description && (
+          <p className="text-[10px] text-muted text-center line-clamp-2 mt-0.5 font-light">{ad.description}</p>
+        )}
+      </>
+    );
+
+    const node = ad.branchCategory ? (
+      <AdBranchLinkButton
+        options={branchOptions}
+        wrapperClassName="relative w-24 sm:w-28 flex flex-col items-center"
+        buttonClassName="flex flex-col items-center w-full appearance-none bg-transparent border-0 p-0 m-0 cursor-pointer"
+      >
+        {circleContent}
+      </AdBranchLinkButton>
+    ) : ad.link ? (
+      <a
+        href={ad.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-24 sm:w-28 flex flex-col items-center"
+      >
+        {circleContent}
+      </a>
+    ) : (
+      <div className="w-24 sm:w-28 flex flex-col items-center">{circleContent}</div>
+    );
+
+    return { id: ad.id, node };
+  });
   const whatsappSocials = socials.filter((s) => s.platform === "whatsapp");
   const otherSocials = socials
     .filter((s) => s.platform !== "whatsapp")
@@ -148,87 +199,19 @@ export default async function Home() {
           </section>
         )}
 
+        {circleAdItems.length > 0 && <AdCarousel items={circleAdItems} />}
+
         <section>
           <h2 className="mx-auto w-fit text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
             Anuncios y publicaciones
           </h2>
-          {ads.length === 0 ? (
+          {cardAds.length === 0 ? (
             <p className="mx-auto w-fit text-center text-muted font-light bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
               Todavía no hay anuncios publicados.
             </p>
           ) : (
-            <>
-              {circleAds.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-x-5 gap-y-6 mb-12">
-                  {circleAds.map(({ ad }) => {
-                    const branchOptions = ad.branchCategory
-                      ? branchLinks
-                          .filter((b) => b.category === ad.branchCategory)
-                          .map((b) => ({ branch: b.branch, url: b.url }))
-                      : [];
-
-                    const circleContent = (
-                      <>
-                        {ad.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={ad.imageUrl}
-                            alt={ad.title}
-                            className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover mx-auto"
-                          />
-                        ) : (
-                          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-brand-tint flex items-center justify-center text-brand text-xl font-medium mx-auto">
-                            {ad.title.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <p className="mt-2 text-xs font-semibold text-center text-foreground">{ad.title}</p>
-                        {ad.description && (
-                          <p className="text-[10px] text-muted text-center line-clamp-2 mt-0.5 font-light">
-                            {ad.description}
-                          </p>
-                        )}
-                      </>
-                    );
-
-                    if (ad.branchCategory) {
-                      return (
-                        <AdBranchLinkButton
-                          key={ad.id}
-                          options={branchOptions}
-                          wrapperClassName="relative w-24 sm:w-28 flex flex-col items-center"
-                          buttonClassName="flex flex-col items-center w-full appearance-none bg-transparent border-0 p-0 m-0 cursor-pointer transition hover:-translate-y-0.5"
-                        >
-                          {circleContent}
-                        </AdBranchLinkButton>
-                      );
-                    }
-
-                    if (ad.link) {
-                      return (
-                        <a
-                          key={ad.id}
-                          href={ad.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-24 sm:w-28 flex flex-col items-center transition hover:-translate-y-0.5"
-                        >
-                          {circleContent}
-                        </a>
-                      );
-                    }
-
-                    return (
-                      <div key={ad.id} className="w-24 sm:w-28 flex flex-col items-center">
-                        {circleContent}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {cardAds.length > 0 && (
-                <div className="grid sm:grid-cols-2 gap-7">
-                  {cardAds.map(({ ad, embedUrl, uploadedVideo, hasVideo }) => {
+            <div className="grid sm:grid-cols-2 gap-7">
+              {cardAds.map(({ ad, embedUrl, uploadedVideo, hasVideo }) => {
                     const hasCustomSize = Boolean(ad.mediaWidth || ad.mediaHeight);
                     const mediaStyle = hasCustomSize
                       ? {
@@ -349,10 +332,8 @@ export default async function Home() {
                         {cardBody}
                       </article>
                     );
-                  })}
-                </div>
-              )}
-            </>
+              })}
+            </div>
           )}
         </section>
       </main>
