@@ -12,7 +12,7 @@ Sitio web de la marca de cosméticos "Wanna Cosmetics" (sucursales en Rio Grande
 ## Stack técnico
 
 - Next.js 16 (App Router, Turbopack), React 19, TypeScript, Tailwind CSS v4.
-- Prisma ORM v5.22 + PostgreSQL alojado en **Supabase**.
+- Prisma ORM v5.22 + PostgreSQL alojado en **Neon** (vía la integración de Storage de Vercel — hasta el 6/10/2026 estuvo en Supabase, migrado por cortes de conexión intermitentes recurrentes, ver sección de historial más abajo).
 - Subida de imágenes/videos: Vercel Blob (`@vercel/blob`), vía upload server-side en `/api/upload`.
 - Autenticación admin: cookie HMAC-firmada (`src/lib/auth.ts`), sin usuarios/roles, solo una contraseña (`ADMIN_PASSWORD`).
 
@@ -20,8 +20,8 @@ Sitio web de la marca de cosméticos "Wanna Cosmetics" (sucursales en Rio Grande
 
 - Proyecto de Vercel: **wanna-cosmetics**. URL pública: `https://wanna-cosmetics.vercel.app`.
 - **Importante**: Vercel despliega en producción desde la rama `claude/modest-clarke-8trpfz`, **no desde `main`**. Cualquier trabajo nuevo debe pushearse a esa rama (o cambiar la rama de producción en Vercel si se decide mergear a main en algún momento).
-- Variables de entorno (configuradas en Vercel, no están en el repo): `DATABASE_URL` (connection string de Supabase, **Session Pooler**, puerto 5432 — el Transaction Pooler port 6543 NO sirve porque `prisma migrate deploy` se cuelga con pgbouncer en modo transacción), `ADMIN_PASSWORD`, `SESSION_SECRET`, `BLOB_READ_WRITE_TOKEN`.
-- Build command: `npm run build` → corre `node scripts/migrate-with-retry.mjs && next build` (ver sección de problema conocido más abajo).
+- Variables de entorno (configuradas en Vercel, no están en el repo): `DATABASE_URL` (connection string **pooled** de Neon), `DIRECT_URL` (connection string **directa/sin pooling** de Neon, usada por Prisma solo para migraciones — ver `directUrl` en `prisma/schema.prisma`), `ADMIN_PASSWORD`, `SESSION_SECRET`, `BLOB_READ_WRITE_TOKEN`. La base de Neon se creó y conectó desde el proyecto de Vercel (Storage tab), no hace falta cuenta separada en neon.tech para administrarla.
+- Build command: `npm run build` → corre `node scripts/migrate-with-retry.mjs && next build` (ver sección de problema conocido más abajo — documentada para Supabase, pero el mismo mecanismo de reintentos sigue aplicando con Neon si hubiera cortes).
 
 ## Modelo de datos (`prisma/schema.prisma`)
 
@@ -43,17 +43,17 @@ Sitio web de la marca de cosméticos "Wanna Cosmetics" (sucursales en Rio Grande
 - Los `circleAds` se arman como `circleAdItems` (array de `{id, node}`, el `node` ya resuelto con su wrapper clickeable correspondiente — `AdBranchLinkButton`, `<a>` o `<div>`) y se renderizan en `AdCarousel` (`src/components/AdCarousel.tsx`), un carrusel horizontal deslizable (scroll-snap) ubicado entre "Catálogos" y "Anuncios y publicaciones". El ítem más cercano al centro del contenedor se resalta (más grande, opacidad completa) vía un listener de scroll que mide `getBoundingClientRect()` de cada ítem — se recalcula en cada scroll/resize, sin librería externa. Si no hay `circleAdItems`, el componente devuelve `null` y la página queda idéntica a como se veía antes de esta feature (nada de contenedor vacío). El padding lateral del carrusel (`calc(50% - 3.5rem)`) es lo que permite centrar el primer y el último ítem, no solo los del medio.
 - Selector global de sucursal (`src/lib/branch-context.tsx` + `src/components/BranchSelector.tsx`): un desplegable debajo de "Compartir" donde el visitante elige su sucursal una sola vez. Se guarda en `localStorage` (vía `useSyncExternalStore`, no `useEffect` + `setState` — ese patrón dispara un error de lint nuevo, `react-hooks/set-state-in-effect`, no usarlo para esto) y queda disponible por `BranchContext` para cualquier componente cliente de la página, sin prop-drilling a través de `page.tsx` (que es un Server Component). Tanto `AdBranchLinkButton` como `WhatsappFloatingButton` leen `useBranch()`: si la sucursal elegida coincide con una de sus opciones, van directo (como `<a>` normal) sin mostrar el popover de "¿qué sucursal?". Si no hay sucursal elegida, o no coincide ninguna opción, se comportan exactamente como antes (preguntan al tocar). El `<select>` lista la unión de `Catalog.branch` y los `label` de los `SocialLink` de WhatsApp.
 
-## ⚠️ Problema conocido: Supabase tiene cortes de conexión intermitentes
+## ⚠️ Historial: cortes de conexión intermitentes con Supabase (ya migrado a Neon)
 
-Varias veces en este proyecto, la conexión a la base de Supabase se cortó por unos segundos (a veces hasta ~1 minuto) de forma espontánea — no por un bug del código. Esto causó, en distintos momentos: la página pública caída con 500, rutas de la API fallando, el build de Vercel fallando (`prisma migrate deploy` sin poder conectar), y formularios del panel quedándose trabados en "Guardando...".
+Durante la primera etapa del proyecto (hasta el 6/10/2026) la base estuvo en Supabase, y varias veces la conexión se cortó por unos segundos (a veces hasta ~1 minuto) de forma espontánea — no por un bug del código. Esto causó, en distintos momentos: la página pública caída con 500, rutas de la API fallando, el build de Vercel fallando (`prisma migrate deploy` sin poder conectar), y formularios del panel quedándose trabados en "Guardando...". Por eso se migró la base a **Neon** (ver sección de Stack técnico y Despliegue) — la causa era infraestructura de Supabase, no el código.
 
-Ya se mitigó bastante, pero **puede volver a pasar** — si el usuario reporta algo similar, no asumir que es un bug nuevo, revisar primero si es este problema recurrente:
+Las mitigaciones que se agregaron en ese momento son genéricas (sirven ante cualquier corte transitorio de conexión a la base, sea cual sea el proveedor) y se mantienen tal cual con Neon — si el usuario reporta algo similar (sitio caído, formulario trabado en "Guardando..."), no asumir que es un bug nuevo, revisar primero si es un corte transitorio de este tipo:
 
 - **Reintentos en runtime**: todas las rutas de API (`src/app/api/**/route.ts`) y las páginas que leen de Prisma directamente (página pública, páginas de `/admin/*`) usan `withRetry()` de `src/lib/with-retry.ts` (2 reintentos, 500ms de espera) para tolerar cortes cortos.
 - **Reintentos en el build**: `scripts/migrate-with-retry.mjs` reintenta `prisma migrate deploy` hasta 8 veces con 10s de espera (hasta 80s) antes de abortar el build.
 - **Los formularios del admin ya no se quedan trabados**: `AdsManager`, `CatalogsManager`, `SocialsManager`, `SiteSettingsManager` envuelven sus guardados en try/catch/finally, así que si falla la conexión, el botón se libera y muestra un error en vez de colgarse en "Guardando...".
 
-Si el corte dura más que estos márgenes (ej. varios minutos seguidos), ningún reintento del lado del código lo soluciona — hay que revisar del lado de Supabase: si el proyecto está pausado (plan gratis), si se llegó a algún límite de uso/ancho de banda, o si hay una caída general en `status.supabase.com`.
+Si el corte dura más que estos márgenes (ej. varios minutos seguidos), ningún reintento del lado del código lo soluciona — hay que revisar el dashboard de Neon (límites de uso/cómputo del plan gratis, o estado general en `neonstatus.com`).
 
 ## Pendiente / diferido (decisión explícita del usuario, no son bugs)
 
