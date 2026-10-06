@@ -3,12 +3,14 @@ import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 import AdBranchLinkButton from "@/components/AdBranchLinkButton";
 import ShareButton from "@/components/ShareButton";
+import BranchSelector from "@/components/BranchSelector";
 import WhatsappFloatingButton, {
   floatingButtonClasses,
   floatingIconClasses,
   floatingLabelClasses,
 } from "@/components/WhatsappFloatingButton";
 import { withRetry } from "@/lib/with-retry";
+import { BranchProvider } from "@/lib/branch-context";
 
 const SOCIAL_PRIORITY: Record<string, number> = { instagram: 0, facebook: 1 };
 
@@ -49,8 +51,15 @@ export default async function Home() {
     .sort((a, b) => (SOCIAL_PRIORITY[a.platform] ?? 99) - (SOCIAL_PRIORITY[b.platform] ?? 99));
   const logoUrl = settings?.logoUrl || "/hero-logo.webp";
   const backgroundImageUrl = settings?.backgroundImageUrl || null;
+  const branches = Array.from(
+    new Set([
+      ...catalogs.filter((c) => c.branch).map((c) => c.branch as string),
+      ...whatsappSocials.filter((s) => s.label).map((s) => s.label as string),
+    ])
+  );
 
   return (
+    <BranchProvider>
     <div
       className="min-h-screen bg-background text-foreground bg-cover bg-center bg-no-repeat bg-fixed"
       style={backgroundImageUrl ? { backgroundImage: `url(${backgroundImageUrl})` } : undefined}
@@ -92,6 +101,7 @@ export default async function Home() {
             Novedades, promociones y catálogos
           </p>
           <ShareButton />
+          <BranchSelector branches={branches} />
         </div>
       </header>
 
@@ -356,5 +366,6 @@ export default async function Home() {
         </a>
       </footer>
     </div>
+    </BranchProvider>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useBranch } from "@/lib/branch-context";
 
 type BranchOption = {
   branch: string;
@@ -18,6 +19,7 @@ export default function AdBranchLinkButton({
   wrapperClassName?: string;
   buttonClassName?: string;
 }) {
+  const { branch: selectedBranch } = useBranch();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -33,6 +35,20 @@ export default function AdBranchLinkButton({
   }, [open]);
 
   if (options.length === 0) return null;
+
+  // Si el visitante ya eligió su sucursal (desplegable debajo de "Compartir") y
+  // coincide con una de las opciones de este anuncio, vamos directo sin preguntar.
+  const matched = selectedBranch ? options.find((opt) => opt.branch === selectedBranch) : null;
+
+  if (matched) {
+    return (
+      <div className={wrapperClassName}>
+        <a href={matched.url} target="_blank" rel="noopener noreferrer" className={buttonClassName}>
+          {children ?? "Ver más →"}
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className={wrapperClassName} ref={ref}>

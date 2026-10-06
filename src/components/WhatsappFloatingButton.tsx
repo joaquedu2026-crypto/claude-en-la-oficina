@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import SocialIcon from "@/components/SocialIcon";
+import { useBranch } from "@/lib/branch-context";
 
 type BranchOption = {
   branch: string;
@@ -14,6 +15,7 @@ export const floatingIconClasses = "h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0";
 export const floatingLabelClasses = "text-[11px] sm:text-sm font-medium text-brand leading-none whitespace-nowrap";
 
 export default function WhatsappFloatingButton({ options }: { options: BranchOption[] }) {
+  const { branch: selectedBranch } = useBranch();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -30,9 +32,14 @@ export default function WhatsappFloatingButton({ options }: { options: BranchOpt
 
   if (options.length === 0) return null;
 
-  if (options.length === 1) {
+  // Si ya hay una sola opción, o el visitante ya eligió su sucursal y coincide con
+  // una de las opciones, vamos directo al chat sin preguntar.
+  const matched = selectedBranch ? options.find((opt) => opt.branch === selectedBranch) : null;
+  const directOption = options.length === 1 ? options[0] : matched;
+
+  if (directOption) {
     return (
-      <a href={options[0].url} target="_blank" rel="noopener noreferrer" className={floatingButtonClasses}>
+      <a href={directOption.url} target="_blank" rel="noopener noreferrer" className={floatingButtonClasses}>
         <SocialIcon platform="whatsapp" className={floatingIconClasses} />
         <span className={floatingLabelClasses}>WhatsApp</span>
       </a>
