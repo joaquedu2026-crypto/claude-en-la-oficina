@@ -34,6 +34,15 @@ export default async function Home() {
   );
 
   const galleryCatalogs = catalogs.filter((c) => c.showInGallery);
+  const enrichedAds = ads.map((ad) => {
+    const embedUrl = ad.videoUrl && !isVideoFile(ad.videoUrl) ? getYoutubeEmbedUrl(ad.videoUrl) : null;
+    const uploadedVideo = ad.videoUrl && isVideoFile(ad.videoUrl) ? ad.videoUrl : null;
+    return { ad, embedUrl, uploadedVideo, hasVideo: Boolean(uploadedVideo || embedUrl) };
+  });
+  // Un anuncio circular con video cae de vuelta al layout de tarjeta: un video
+  // siempre necesita sus propios controles, así que nunca se muestra compacto.
+  const circleAds = enrichedAds.filter((e) => e.ad.shape === "circle" && !e.hasVideo);
+  const cardAds = enrichedAds.filter((e) => !(e.ad.shape === "circle" && !e.hasVideo));
   const whatsappSocials = socials.filter((s) => s.platform === "whatsapp");
   const otherSocials = socials
     .filter((s) => s.platform !== "whatsapp")
@@ -138,141 +147,202 @@ export default async function Home() {
               Todavía no hay anuncios publicados.
             </p>
           ) : (
-            <div className="grid sm:grid-cols-2 gap-7">
-              {ads.map((ad) => {
-                const embedUrl = ad.videoUrl && !isVideoFile(ad.videoUrl) ? getYoutubeEmbedUrl(ad.videoUrl) : null;
-                const uploadedVideo = ad.videoUrl && isVideoFile(ad.videoUrl) ? ad.videoUrl : null;
-                const hasCustomSize = Boolean(ad.mediaWidth || ad.mediaHeight);
-                const mediaStyle = hasCustomSize
-                  ? {
-                      width: ad.mediaWidth ? `${ad.mediaWidth}px` : undefined,
-                      height: ad.mediaHeight ? `${ad.mediaHeight}px` : undefined,
-                      maxWidth: "100%",
+            <>
+              {circleAds.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-x-5 gap-y-6 mb-12">
+                  {circleAds.map(({ ad }) => {
+                    const branchOptions = ad.branchCategory
+                      ? catalogs
+                          .filter((c) => c.branch && c.category === ad.branchCategory)
+                          .map((c) => ({ branch: c.branch as string, url: c.url }))
+                      : [];
+
+                    const circleContent = (
+                      <>
+                        {ad.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={ad.imageUrl}
+                            alt={ad.title}
+                            className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover mx-auto"
+                          />
+                        ) : (
+                          <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-brand-tint flex items-center justify-center text-brand text-xl font-medium mx-auto">
+                            {ad.title.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <p className="mt-2 text-xs font-semibold text-center text-foreground">{ad.title}</p>
+                        {ad.description && (
+                          <p className="text-[10px] text-muted text-center line-clamp-2 mt-0.5 font-light">
+                            {ad.description}
+                          </p>
+                        )}
+                      </>
+                    );
+
+                    if (ad.branchCategory) {
+                      return (
+                        <AdBranchLinkButton
+                          key={ad.id}
+                          options={branchOptions}
+                          wrapperClassName="relative w-24 sm:w-28 flex flex-col items-center"
+                          buttonClassName="flex flex-col items-center w-full appearance-none bg-transparent border-0 p-0 m-0 cursor-pointer transition hover:-translate-y-0.5"
+                        >
+                          {circleContent}
+                        </AdBranchLinkButton>
+                      );
                     }
-                  : undefined;
 
-                const hasVideo = Boolean(uploadedVideo || embedUrl);
-                const isCircle = ad.shape === "circle";
-                // Un video siempre necesita sus propios controles interactivos, así que
-                // nunca convertimos la tarjeta entera en un único botón cuando hay video.
-                const wholeCardClickable = !hasVideo && Boolean(ad.link || ad.branchCategory);
-                const branchOptions = ad.branchCategory
-                  ? catalogs
-                      .filter((c) => c.branch && c.category === ad.branchCategory)
-                      .map((c) => ({ branch: c.branch as string, url: c.url }))
-                  : [];
-
-                const mediaBlock = uploadedVideo ? (
-                  <div
-                    className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
-                    style={mediaStyle}
-                  >
-                    <video
-                      src={uploadedVideo}
-                      controls
-                      className={hasCustomSize ? "w-full h-full" : "w-full h-full object-cover"}
-                    />
-                  </div>
-                ) : embedUrl ? (
-                  <div
-                    className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
-                    style={mediaStyle}
-                  >
-                    <iframe src={embedUrl} title={ad.title} className="w-full h-full" allowFullScreen />
-                  </div>
-                ) : isCircle ? (
-                  ad.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={ad.imageUrl}
-                      alt={ad.title}
-                      className="h-32 w-32 sm:h-40 sm:w-40 rounded-full object-cover mx-auto mt-6"
-                    />
-                  ) : (
-                    <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-full bg-brand-tint flex items-center justify-center text-brand text-3xl font-medium mx-auto mt-6">
-                      {ad.title.charAt(0).toUpperCase()}
-                    </div>
-                  )
-                ) : ad.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={ad.imageUrl}
-                    alt={ad.title}
-                    className={`rounded-t-2xl ${hasCustomSize ? "mx-auto" : "w-full aspect-video object-cover"}`}
-                    style={mediaStyle}
-                  />
-                ) : null;
-
-                const cardBody = (
-                  <div className={`p-6 flex-1 flex flex-col ${isCircle ? "items-center text-center" : ""}`}>
-                    <h3 className="font-medium text-lg">{ad.title}</h3>
-                    <p className="text-muted mt-2 flex-1 whitespace-pre-wrap font-light text-sm leading-relaxed">
-                      {ad.description}
-                    </p>
-                    {wholeCardClickable ? (
-                      <span className="mt-5 inline-flex items-center gap-1 text-brand font-medium text-sm">
-                        Ver más →
-                      </span>
-                    ) : ad.branchCategory ? (
-                      <AdBranchLinkButton options={branchOptions} />
-                    ) : (
-                      ad.link && (
+                    if (ad.link) {
+                      return (
                         <a
+                          key={ad.id}
                           href={ad.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
+                          className="w-24 sm:w-28 flex flex-col items-center transition hover:-translate-y-0.5"
                         >
-                          Ver más →
+                          {circleContent}
                         </a>
-                      )
-                    )}
-                    {ad.videoUrl && !embedUrl && !uploadedVideo && (
-                      <a
-                        href={ad.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
+                      );
+                    }
+
+                    return (
+                      <div key={ad.id} className="w-24 sm:w-28 flex flex-col items-center">
+                        {circleContent}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {cardAds.length > 0 && (
+                <div className="grid sm:grid-cols-2 gap-7">
+                  {cardAds.map(({ ad, embedUrl, uploadedVideo, hasVideo }) => {
+                    const hasCustomSize = Boolean(ad.mediaWidth || ad.mediaHeight);
+                    const mediaStyle = hasCustomSize
+                      ? {
+                          width: ad.mediaWidth ? `${ad.mediaWidth}px` : undefined,
+                          height: ad.mediaHeight ? `${ad.mediaHeight}px` : undefined,
+                          maxWidth: "100%",
+                        }
+                      : undefined;
+
+                    // Un video siempre necesita sus propios controles interactivos, así que
+                    // nunca convertimos la tarjeta entera en un único botón cuando hay video.
+                    const wholeCardClickable = !hasVideo && Boolean(ad.link || ad.branchCategory);
+                    const branchOptions = ad.branchCategory
+                      ? catalogs
+                          .filter((c) => c.branch && c.category === ad.branchCategory)
+                          .map((c) => ({ branch: c.branch as string, url: c.url }))
+                      : [];
+
+                    const mediaBlock = uploadedVideo ? (
+                      <div
+                        className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
+                        style={mediaStyle}
                       >
-                        Ver video →
-                      </a>
-                    )}
-                  </div>
-                );
+                        <video
+                          src={uploadedVideo}
+                          controls
+                          className={hasCustomSize ? "w-full h-full" : "w-full h-full object-cover"}
+                        />
+                      </div>
+                    ) : embedUrl ? (
+                      <div
+                        className={`overflow-hidden rounded-t-2xl ${hasCustomSize ? "mx-auto" : "aspect-video"}`}
+                        style={mediaStyle}
+                      >
+                        <iframe src={embedUrl} title={ad.title} className="w-full h-full" allowFullScreen />
+                      </div>
+                    ) : ad.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={ad.imageUrl}
+                        alt={ad.title}
+                        className={`rounded-t-2xl ${hasCustomSize ? "mx-auto" : "w-full aspect-video object-cover"}`}
+                        style={mediaStyle}
+                      />
+                    ) : null;
 
-                const cardClasses = `bg-white border border-border-soft rounded-2xl flex flex-col shadow-sm hover:shadow-md transition ${ad.fullWidth ? "sm:col-span-2" : ""}`;
+                    const cardBody = (
+                      <div className="p-6 flex-1 flex flex-col">
+                        <h3 className="font-medium text-lg">{ad.title}</h3>
+                        <p className="text-muted mt-2 flex-1 whitespace-pre-wrap font-light text-sm leading-relaxed">
+                          {ad.description}
+                        </p>
+                        {wholeCardClickable ? (
+                          <span className="mt-5 inline-flex items-center gap-1 text-brand font-medium text-sm">
+                            Ver más →
+                          </span>
+                        ) : ad.branchCategory ? (
+                          <AdBranchLinkButton options={branchOptions} />
+                        ) : (
+                          ad.link && (
+                            <a
+                              href={ad.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
+                            >
+                              Ver más →
+                            </a>
+                          )
+                        )}
+                        {ad.videoUrl && !embedUrl && !uploadedVideo && (
+                          <a
+                            href={ad.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-5 inline-flex items-center gap-1 text-brand hover:text-brand-light font-medium text-sm transition"
+                          >
+                            Ver video →
+                          </a>
+                        )}
+                      </div>
+                    );
 
-                if (wholeCardClickable && ad.branchCategory) {
-                  return (
-                    <AdBranchLinkButton
-                      key={ad.id}
-                      options={branchOptions}
-                      wrapperClassName={`relative ${cardClasses}`}
-                      buttonClassName="flex-1 flex flex-col text-left w-full appearance-none bg-transparent border-0 p-0 m-0 cursor-pointer"
-                    >
-                      {mediaBlock}
-                      {cardBody}
-                    </AdBranchLinkButton>
-                  );
-                }
+                    const cardClasses = `bg-white border border-border-soft rounded-2xl flex flex-col shadow-sm hover:shadow-md transition ${ad.fullWidth ? "sm:col-span-2" : ""}`;
 
-                if (wholeCardClickable && ad.link) {
-                  return (
-                    <a key={ad.id} href={ad.link} target="_blank" rel="noopener noreferrer" className={cardClasses}>
-                      {mediaBlock}
-                      {cardBody}
-                    </a>
-                  );
-                }
+                    if (wholeCardClickable && ad.branchCategory) {
+                      return (
+                        <AdBranchLinkButton
+                          key={ad.id}
+                          options={branchOptions}
+                          wrapperClassName={`relative ${cardClasses}`}
+                          buttonClassName="flex-1 flex flex-col text-left w-full appearance-none bg-transparent border-0 p-0 m-0 cursor-pointer"
+                        >
+                          {mediaBlock}
+                          {cardBody}
+                        </AdBranchLinkButton>
+                      );
+                    }
 
-                return (
-                  <article key={ad.id} className={cardClasses}>
-                    {mediaBlock}
-                    {cardBody}
-                  </article>
-                );
-              })}
-            </div>
+                    if (wholeCardClickable && ad.link) {
+                      return (
+                        <a
+                          key={ad.id}
+                          href={ad.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cardClasses}
+                        >
+                          {mediaBlock}
+                          {cardBody}
+                        </a>
+                      );
+                    }
+
+                    return (
+                      <article key={ad.id} className={cardClasses}>
+                        {mediaBlock}
+                        {cardBody}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </section>
       </main>
