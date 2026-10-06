@@ -11,11 +11,11 @@ Hecho con Next.js, Tailwind CSS, Prisma (PostgreSQL) y Vercel Blob para las imá
 
 Se usan tres servicios, todos con plan gratuito:
 
-### 1. Crear la base de datos (Neon)
+### 1. Crear la base de datos (Supabase)
 
-1. Entrá a [neon.tech](https://neon.tech) y creá una cuenta gratis (podés usar tu cuenta de GitHub).
+1. Entrá a [supabase.com](https://supabase.com) y creá una cuenta gratis (podés usar tu cuenta de GitHub).
 2. Creá un proyecto nuevo (cualquier nombre, por ejemplo "wanna-cosmetics").
-3. Copiá el **connection string** que te muestra (empieza con `postgresql://...`). Lo vas a necesitar en el paso 2.
+3. Andá a **Project Settings → Database** y copiá el **connection string** del **Session Pooler** (puerto 5432, no el Transaction Pooler del puerto 6543 — ese no funciona con las migraciones de Prisma). Lo vas a necesitar en el paso 2.
 
 ### 2. Crear el proyecto en Vercel
 
@@ -23,7 +23,7 @@ Se usan tres servicios, todos con plan gratuito:
 2. Hacé clic en **Add New → Project** e importá el repositorio `claude-en-la-oficina`.
 3. Elegí qué rama desplegar (podés pedirme que fusione los cambios a `main` antes de este paso).
 4. Antes de hacer clic en "Deploy", abrí **Environment Variables** y agregá:
-   - `DATABASE_URL` → el connection string de Neon del paso 1.
+   - `DATABASE_URL` → el connection string de Supabase del paso 1.
    - `ADMIN_PASSWORD` → la contraseña que quieras para el panel.
    - `SESSION_SECRET` → una cadena larga y aleatoria (podés generarla en [random.org](https://www.random.org/strings/) o pedirme una).
 5. Hacé clic en **Deploy**.
@@ -47,12 +47,12 @@ Listo — tu sitio va a estar disponible en una dirección tipo `tu-proyecto.ver
    ```
 4. Creá un archivo `.env` en la raíz del proyecto con:
    ```bash
-   DATABASE_URL="el-connection-string-de-neon"
+   DATABASE_URL="el-connection-string-de-supabase"
    ADMIN_PASSWORD="tu-contraseña"
    SESSION_SECRET="una-cadena-larga-aleatoria"
    BLOB_READ_WRITE_TOKEN="el-token-de-vercel-blob"
    ```
-   El `DATABASE_URL` puede ser el mismo de Neon que usás en producción, o podés crear una segunda base en Neon solo para pruebas.
+   El `DATABASE_URL` puede ser el mismo de Supabase que usás en producción, o podés crear una segunda base solo para pruebas (local o en Supabase).
    El `BLOB_READ_WRITE_TOKEN` se obtiene desde Vercel: **Storage → tu Blob store → pestaña .env.local** (copiá el valor de ahí).
 5. Aplicá las migraciones:
    ```bash
@@ -67,7 +67,7 @@ Listo — tu sitio va a estar disponible en una dirección tipo `tu-proyecto.ver
 ## Notas importantes
 
 - Nunca compartas el archivo `.env` ni subas sus valores a GitHub (ya está excluido por `.gitignore`).
-- Los anuncios, catálogos y redes sociales quedan guardados en la base de datos de Neon — podés verlos/respaldarlos desde el panel de Neon.
+- Los anuncios, catálogos y redes sociales quedan guardados en la base de datos de Supabase — podés verlos/respaldarlos desde el panel de Supabase (Table Editor).
 - Las imágenes se guardan en Vercel Blob, accesibles desde cualquier parte del mundo sin depender de tu computadora.
 
 ## Producción (build manual)
