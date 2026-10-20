@@ -9,6 +9,7 @@ type Catalog = {
   description: string | null;
   url: string;
   imageUrl: string | null;
+  branch: string | null;
   published: boolean;
   order: number;
 };
@@ -18,9 +19,16 @@ const emptyForm = {
   description: "",
   url: "",
   imageUrl: "",
+  branch: "",
 };
 
-export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: Catalog[] }) {
+export default function CatalogsManager({
+  initialCatalogs,
+  branches,
+}: {
+  initialCatalogs: Catalog[];
+  branches: string[];
+}) {
   const [catalogs, setCatalogs] = useState<Catalog[]>(initialCatalogs);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -35,6 +43,7 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
       description: catalog.description ?? "",
       url: catalog.url,
       imageUrl: catalog.imageUrl ?? "",
+      branch: catalog.branch ?? "",
     });
   }
 
@@ -150,6 +159,26 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
         </div>
 
         <div>
+          <label className="block text-sm text-foreground mb-1">Sucursal (opcional)</label>
+          <select
+            value={form.branch}
+            onChange={(e) => setForm((f) => ({ ...f, branch: e.target.value }))}
+            className="w-full rounded-lg bg-white border border-border-soft px-3 py-2 outline-none focus:border-brand"
+          >
+            <option value="">Todas / sin asignar</option>
+            {branches.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-muted mt-1">
+            Si le asignás una sucursal, cuando el visitante la elija en el selector de sucursal de la página,
+            este catálogo se va a mostrar solo (más grande y centrado) en vez de junto a todos los demás.
+          </p>
+        </div>
+
+        <div>
           <label className="block text-sm text-foreground mb-1">Descripción (opcional)</label>
           <textarea
             value={form.description}
@@ -210,6 +239,11 @@ export default function CatalogsManager({ initialCatalogs }: { initialCatalogs: 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-medium truncate">{catalog.name}</h3>
+                {catalog.branch && (
+                  <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
+                    {catalog.branch}
+                  </span>
+                )}
                 {!catalog.published && (
                   <span className="text-xs bg-brand-tint px-2 py-0.5 rounded-full text-brand">
                     Oculto

@@ -3,6 +3,7 @@ import { getYoutubeEmbedUrl, isVideoFile } from "@/lib/video";
 import SocialIcon, { platformLabel } from "@/components/SocialIcon";
 import AdBranchLinkButton from "@/components/AdBranchLinkButton";
 import AdCarousel from "@/components/AdCarousel";
+import CatalogsSection from "@/components/CatalogsSection";
 import ShareButton from "@/components/ShareButton";
 import BranchSelector from "@/components/BranchSelector";
 import WhatsappFloatingButton, {
@@ -157,47 +158,7 @@ export default async function Home() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-16 space-y-20">
-        {catalogs.length > 0 && (
-          <section>
-            <h2 className="mx-auto w-fit text-center text-xs font-medium tracking-[0.2em] text-brand uppercase mb-10 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full">
-              Catálogos
-            </h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-              {catalogs.map((catalog) => (
-                <a
-                  key={catalog.id}
-                  href={catalog.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group bg-white border border-border-soft hover:border-brand-light rounded-xl overflow-hidden flex flex-col transition shadow-sm hover:shadow-md"
-                >
-                  {catalog.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={catalog.imageUrl}
-                      alt={catalog.name}
-                      className="w-full aspect-square object-cover"
-                    />
-                  ) : (
-                    <div className="w-full aspect-square bg-brand-tint flex items-center justify-center text-brand text-xl font-medium">
-                      {catalog.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="bg-white p-2 text-center">
-                    <p className="font-semibold text-xs text-foreground group-hover:text-brand transition">
-                      {catalog.name}
-                    </p>
-                    {catalog.description && (
-                      <p className="text-[11px] text-muted mt-0.5 font-light line-clamp-2">
-                        {catalog.description}
-                      </p>
-                    )}
-                  </div>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
+        {catalogs.length > 0 && <CatalogsSection catalogs={catalogs} />}
 
         {circleAdItems.length > 0 && <AdCarousel items={circleAdItems} />}
 

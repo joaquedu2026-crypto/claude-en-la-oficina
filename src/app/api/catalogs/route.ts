@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
         url: normalizeUrl(rawUrl),
         description: typeof body?.description === "string" && body.description ? body.description : null,
         imageUrl: typeof body?.imageUrl === "string" && body.imageUrl ? body.imageUrl : null,
+        branch: typeof body?.branch === "string" && body.branch ? body.branch : null,
         published: body?.published !== false,
         order: typeof body?.order === "number" ? body.order : 0,
       },

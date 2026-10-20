@@ -32,6 +32,7 @@ model Catalog {
   description String?
   url         String
   imageUrl    String?
+  branch      String?
   published   Boolean  @default(true)
   order       Int      @default(0)
   createdAt   DateTime @default(now())
